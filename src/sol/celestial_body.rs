@@ -17,7 +17,6 @@ pub struct CelestialBody {
     pub momentum: Vector2D<f32>,
 }
 
-
 impl CelestialBody {
     pub fn new(
         body_type: CelestialType,

@@ -1,31 +1,31 @@
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
-use sol::{celestial_body::CelestialBody, reality_calulator::calculate_new_positions};
+use camera::SolCameraPlugin;
+// use bevy_fly_camera::{FlyCamera2d, FlyCameraPlugin};
 
-use crate::sol::reality_calulator::default_system;
+mod camera;
 mod sol;
+use crate::sol::reality_calulator::default_system;
+use sol::{celestial_body::CelestialBody, reality_calulator::calculate_new_positions};
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_systems(Update, bevy::window::close_on_esc)
-        // Systems to run at startup
-        .add_systems(Startup, setup)
+        // Camera Setup
+        .add_plugins(SolCameraPlugin)
+        // Background
         .insert_resource(ClearColor(Color::Rgba {
             red: 0.0,
             green: 0.0,
             blue: 0.0,
             alpha: 255.0,
         }))
-        // .add_systems(Startup, create_system)
+        // Insert universe
         .add_systems(Startup, big_bang)
         // Systems to run every frame
         .add_systems(Update, update_positions)
         // .add_systems(Update, calculate_collisions)
         .run();
-}
-
-fn setup(mut commands: Commands) {
-    commands.spawn(Camera2dBundle::default());
 }
 
 fn big_bang(
