@@ -1,7 +1,7 @@
 use std::fmt::{Debug, Display, Error, Formatter};
 
 use ::vector2d::Vector2D;
-use bevy::prelude::{Component, Color};
+use bevy::{prelude::{Component, Color}, ecs::query::WorldQuery};
 use rnglib::{Language, RNG};
 
 use super::{celestial_type::CelestialType, reality_calulator::GRAVITY};

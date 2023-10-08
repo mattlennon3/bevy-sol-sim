@@ -1,11 +1,13 @@
+mod sol;
+mod camera;
+mod gui;
+
+use crate::sol::reality_calulator::{calculate_new_positions, default_system};
+use crate::sol::celestial_body::CelestialBody;
+
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use camera::SolCameraPlugin;
-// use bevy_fly_camera::{FlyCamera2d, FlyCameraPlugin};
-
-mod camera;
-mod sol;
-use crate::sol::reality_calulator::default_system;
-use sol::{celestial_body::CelestialBody, reality_calulator::calculate_new_positions};
+use gui::SolGuiPlugin;
 
 fn main() {
     App::new()
@@ -13,6 +15,8 @@ fn main() {
         .add_systems(Update, bevy::window::close_on_esc)
         // Camera Setup
         .add_plugins(SolCameraPlugin)
+        // GUI
+        .add_plugins(SolGuiPlugin)
         // Background
         .insert_resource(ClearColor(Color::Rgba {
             red: 0.0,
