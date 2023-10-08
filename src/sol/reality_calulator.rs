@@ -1,4 +1,3 @@
-use bevy::prelude::info;
 use vector2d::Vector2D;
 
 use super::celestial_body::CelestialBody;

@@ -1,13 +1,10 @@
 use std::fmt::{Debug, Display, Error, Formatter};
 
 use ::vector2d::Vector2D;
-use bevy::prelude::{Component, Bundle, Color};
+use bevy::prelude::{Component, Color};
 use rnglib::{Language, RNG};
 
 use super::{celestial_type::CelestialType, reality_calulator::GRAVITY};
-
-// use regex::Regex;
-// use wasm_bindgen::prelude::*;
 
 #[derive(PartialEq, Clone, Component)]
 pub struct CelestialBody {
