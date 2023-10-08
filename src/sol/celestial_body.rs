@@ -43,8 +43,7 @@ impl CelestialBody {
         }
     }
 
-    pub fn new_planet(pos: Vector2D<f32>, momentum: Vector2D<f32>) -> Self {
-        let mass = 1.0;
+    pub fn new_planet(pos: Vector2D<f32>, momentum: Vector2D<f32>, mass: f32) -> Self {
         CelestialBody::new(CelestialType::PLANET, pos, mass, momentum)
     }
 

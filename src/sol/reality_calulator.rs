@@ -71,18 +71,21 @@ pub fn default_system() -> SystemContents {
     //     trail: vec![],
     // };
     let planet =
-        CelestialBody::new_planet(Vector2D { x: 85.0, y: 0.0 }, Vector2D { x: 0.0, y: 130.0 });
+        CelestialBody::new_planet(Vector2D { x: 85.0, y: 0.0 }, Vector2D { x: 0.0, y: 130.0 }, 1.0);
     let planet2 = CelestialBody::new_planet(
         Vector2D { x: 0.0, y: -300.0 },
         Vector2D { x: 1300.0, y: 0.0 },
+        8.0
     );
     let planet3 = CelestialBody::new_planet(
         Vector2D { x: 240.0, y: 0.0 },
         Vector2D { x: 0.0, y: 2000.0 },
+        10.0
     );
     let planet4 = CelestialBody::new_planet(
         Vector2D { x: 0.0, y: 450.0 },
         Vector2D { x: 1500.0, y: 0.0 },
+        19.0
     );
     let planet5 = CelestialBody::new_planet(
         Vector2D {
@@ -90,6 +93,7 @@ pub fn default_system() -> SystemContents {
             y: -500.0,
         },
         Vector2D { x: 700.0, y: 700.0 },
+        20.0
     );
 
     let objects = vec![star, planet, planet2, planet3, planet4, planet5];
