@@ -1,6 +1,6 @@
-use bevy::{prelude::*, ecs::system::EntityCommands, transform::commands};
+use bevy::{ecs::system::EntityCommands, prelude::*, transform::commands};
 use bevy_egui::{egui, EguiContexts, EguiPlugin, EguiSettings};
-use bevy_mod_picking::prelude::{ListenerInput, Pointer, Click, Listener};
+use bevy_mod_picking::prelude::{Click, Listener, ListenerInput, Pointer};
 
 use crate::sol::celestial_body::CelestialBody;
 
@@ -9,9 +9,10 @@ pub struct SolGuiPlugin;
 impl Plugin for SolGuiPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(EguiPlugin)
-            .add_systems(Startup, setup_gui);
-            // .add_systems(Update, gui_update);
-            // .add_systems(Update, selected_planet);
+            .insert_resource(UISSelectedBody::default())
+            .add_systems(Startup, setup_gui)
+            .add_systems(Update, render_active_body_gui);
+        // .add_systems(Update, selected_planet);
     }
 }
 
@@ -22,34 +23,53 @@ fn setup_gui(mut contexts: EguiContexts) {
     });
 }
 
-pub fn click_body(
-    mut contexts: EguiContexts,
-    mut local: Local<UISSelectedBody>,
-    // mut query: Query<(Entity, &Interaction)>,
-    query: Query<&CelestialBody>,
-    event: Listener<Pointer<Click>>,
-    mut commands: Commands
-    ) {
-        if let Ok(body) = query.get(event.target) {
-            info!("click_body {:?}", body);
-        }
-        // info!("entty {:?}", entity)
-        // for (entity, interaction) in query.iter_mut() {
-        // }
+#[derive(Resource)]
+pub struct UISSelectedBody {
+    pub selected: Option<Entity>,
 }
-
 
 // pub struct UISSelectedBody<'a>(&'a CelestialBody);
-pub struct UISSelectedBody {
-    pub selected: Option<Entity>
-}
 
 impl Default for UISSelectedBody {
     fn default() -> Self {
-        Self {
-            selected: None
-        }
+        Self { selected: None }
     }
+}
+
+pub fn click_body(
+    mut contexts: EguiContexts,
+    mut local: ResMut<UISSelectedBody>,
+    // mut query: Query<(Entity, &Interaction)>,
+    query: Query<&CelestialBody>,
+    event: Listener<Pointer<Click>>,
+    mut commands: Commands,
+) {
+    // local.selected = Some(event.target);
+    if let Ok(body) = query.get(event.target) {
+        info!("Clicked Body: {:?}", body);
+        local.selected = Some(event.target.clone());
+    }
+    // info!("entty {:?}", entity)
+    // for (entity, interaction) in query.iter_mut() {
+    // }
+}
+
+fn render_active_body_gui(
+    local: Res<UISSelectedBody>,
+    query: Query<&CelestialBody>,
+    mut egui_contexts: EguiContexts,
+) {
+    // if let Some(local) = local {
+
+    match local.selected {
+        Some(selected) => {
+            if let Ok(body) = query.get(selected) {
+                
+            }
+        }
+        None => (),
+    };
+    // }
 }
 
 // pub fn selected_planet<T>(
@@ -65,7 +85,7 @@ impl Default for UISSelectedBody {
 // TODO: DOES NOT WORK
 
 fn gui_update(
-    mut commands: Commands,       
+    mut commands: Commands,
     mut selected_query: Query<Entity>,
     mut interaction_query: Query<(&Interaction, Entity)>,
 ) {
