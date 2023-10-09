@@ -7,10 +7,9 @@ use crate::sol::celestial_body::CelestialBody;
 use crate::sol::reality_calulator::{calculate_new_positions, default_system};
 
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
-use bevy_egui::EguiContexts;
 use bevy_mod_picking::prelude::*;
 use camera::SolCameraPlugin;
-use gui::{SolGuiPlugin, UISSelectedBody};
+use gui::SolGuiPlugin;
 
 use bevy_mod_picking::prelude::Click;
 
@@ -38,15 +37,8 @@ fn main() {
         .run();
 }
 
-#[derive(Default)]
-struct MyStateA;
-
-
-
 fn big_bang(
-    // mut egui_contexts: EguiContexts,
     mut commands: Commands,
-    // mut local: Local<UISSelectedBody>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
@@ -55,7 +47,6 @@ fn big_bang(
         let transform = Transform::from_translation(Vec3::new(body.pos.x, body.pos.y, 0.));
         let radius = body.radius;
         let colour = body.get_surface_colour();
-        // local.selected = Some(body.clone());
 
         commands.spawn((
             body,
@@ -67,27 +58,7 @@ fn big_bang(
                 transform,
                 ..default()
             },
-            // On::<Pointer<Click>>::run(|event: Listener<Pointer<Click>>| {
-            //     // event.
-            //     info!("Clicked on entity {:?} {:?}", event.target, event.type_name());
-            //     // commands.get_entity(event.target);
-            //     // let body = event.target.get::<CelestialBody>().unwrap();
-            // }),
-
             On::<Pointer<Click>>::run(click_body),
-            // On::<Pointer<Click>>::add_command::<CelestialBody>(),
-            // // On::<Pointer<Click>>::target_commands_mut::<CelestialBody>(|click, target_commands| {
-            // //     if click.target != click.listener() && click.button == PointerButton::Secondary {
-            // //         target_commands.despawn();
-            // //     }
-            // }),
-
-                // What do I actually want to happen?
-
-                // Some local UI is updated. i.e egui_contexts
-
-
-                // 
         ));
     }
 }

@@ -1,6 +1,6 @@
-use bevy::{ecs::system::EntityCommands, prelude::*, transform::commands};
-use bevy_egui::{egui, EguiContexts, EguiPlugin, EguiSettings};
-use bevy_mod_picking::prelude::{Click, Listener, ListenerInput, Pointer};
+use bevy::prelude::*;
+use bevy_egui::{egui, EguiContexts, EguiPlugin};
+use bevy_mod_picking::prelude::{Click, Listener, Pointer};
 
 use crate::sol::celestial_body::CelestialBody;
 
@@ -12,7 +12,6 @@ impl Plugin for SolGuiPlugin {
             .insert_resource(UISSelectedBody::default())
             .add_systems(Startup, setup_gui)
             .add_systems(Update, render_active_body_gui);
-        // .add_systems(Update, selected_planet);
     }
 }
 
@@ -28,8 +27,6 @@ pub struct UISSelectedBody {
     pub selected: Option<Entity>,
 }
 
-// pub struct UISSelectedBody<'a>(&'a CelestialBody);
-
 impl Default for UISSelectedBody {
     fn default() -> Self {
         Self { selected: None }
@@ -44,14 +41,10 @@ pub fn click_body(
     event: Listener<Pointer<Click>>,
     mut commands: Commands,
 ) {
-    // local.selected = Some(event.target);
     if let Ok(body) = query.get(event.target) {
         info!("Clicked Body: {:?}", body);
         local.selected = Some(event.target.clone());
     }
-    // info!("entty {:?}", entity)
-    // for (entity, interaction) in query.iter_mut() {
-    // }
 }
 
 fn render_active_body_gui(
@@ -59,8 +52,6 @@ fn render_active_body_gui(
     query: Query<&CelestialBody>,
     mut egui_contexts: EguiContexts,
 ) {
-    // if let Some(local) = local {
-
     match local.selected {
         Some(selected) => {
             if let Ok(body) = query.get(selected) {
@@ -69,42 +60,4 @@ fn render_active_body_gui(
         }
         None => (),
     };
-    // }
-}
-
-// pub fn selected_planet<T>(
-//     listener: Res<ListenerInput<T>>, entity: &mut EntityCommands
-//     // mut local: Local<UISSelectedBody>,
-// ) {
-//     // if(local.selected.is_none()) {
-//     //     return;
-//     // }
-//     // info!("SELECTED PLANET {:?}", local.selected);
-// }
-
-// TODO: DOES NOT WORK
-
-fn gui_update(
-    mut commands: Commands,
-    mut selected_query: Query<Entity>,
-    mut interaction_query: Query<(&Interaction, Entity)>,
-) {
-    for (interaction, entity) in &interaction_query {
-        info!("GUI UPDATE");
-        match interaction {
-            Interaction::Pressed => {
-                // Handle click event
-                info!("GUI Pressed");
-
-                // commands.entity(entity).despawn();
-            }
-
-            Interaction::Hovered => {
-                info!("GUI Hovered");
-            }
-            _ => {
-                info!("GUI NONE");
-            }
-        }
-    }
 }
