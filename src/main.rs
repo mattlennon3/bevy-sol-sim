@@ -2,7 +2,7 @@ mod camera;
 mod gui;
 mod sol;
 
-use crate::gui::click_body;
+use crate::gui::describe_body;
 use crate::sol::celestial_body::CelestialBody;
 use crate::sol::reality_calulator::{calculate_new_positions, default_system};
 
@@ -20,7 +20,6 @@ fn main() {
         // Camera Setup
         .add_plugins(SolCameraPlugin)
         // GUI
-        .add_plugins(DefaultPickingPlugins)
         .add_plugins(SolGuiPlugin)
         // Background
         .insert_resource(ClearColor(Color::Rgba {
@@ -58,7 +57,8 @@ fn big_bang(
                 transform,
                 ..default()
             },
-            On::<Pointer<Click>>::run(click_body),
+            // On::<Pointer<Click>>::run(click_body),
+            On::<Pointer<Over>>::run(describe_body),
         ));
     }
 }

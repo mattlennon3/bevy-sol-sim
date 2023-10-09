@@ -85,6 +85,10 @@ impl CelestialBody {
         }
     }
 
+    pub fn speed(&self) -> f32 {
+        self.momentum.length() / self.mass
+    }
+
     // TODO: Make material colour depend on body type and mass
     pub fn get_surface_colour(&self) -> Color {
         match self.body_type {
