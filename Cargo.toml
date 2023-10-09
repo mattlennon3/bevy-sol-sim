@@ -22,3 +22,4 @@ vector2d = "2.2.0"
 random_name_generator = "0.3.6"
 bevy_fly_camera = {path = "../bevy_fly_camera"}
 bevy_egui = "0.22.0"
+bevy_mod_picking = "0.15.0"

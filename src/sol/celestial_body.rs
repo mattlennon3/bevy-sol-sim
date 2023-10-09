@@ -1,7 +1,7 @@
 use std::fmt::{Debug, Display, Error, Formatter};
 
 use ::vector2d::Vector2D;
-use bevy::{prelude::{Component, Color}, ecs::query::WorldQuery};
+use bevy::prelude::{Component, Color, Event, Bundle};
 use rnglib::{Language, RNG};
 
 use super::{celestial_type::CelestialType, reality_calulator::GRAVITY};
@@ -70,6 +70,7 @@ impl CelestialBody {
         match body_type {
             CelestialType::STAR => 22.0,
             CelestialType::PLANET => 8.0,
+            CelestialType::ASTEROID => 0.01,
         }
     }
 
@@ -84,6 +85,7 @@ impl CelestialBody {
         }
     }
 
+    // TODO: Make material colour depend on body type and mass
     pub fn get_surface_colour(&self) -> Color {
         match self.body_type {
             CelestialType::STAR => Color::YELLOW,

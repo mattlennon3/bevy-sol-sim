@@ -1,5 +1,6 @@
 use bevy::{input::mouse::MouseWheel, prelude::*};
 use bevy_fly_camera::{FlyCamera2d, FlyCameraPlugin};
+use bevy_mod_picking::prelude::RaycastPickCamera;
 
 pub struct SolCameraPlugin;
 
@@ -14,6 +15,7 @@ impl Plugin for SolCameraPlugin {
 fn setup_camera(mut commands: Commands) {
     commands
         .spawn(Camera2dBundle::default())
+        .insert(RaycastPickCamera::default())
         .insert(FlyCamera2d::default());
 }
 
