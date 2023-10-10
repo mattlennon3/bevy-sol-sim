@@ -1,14 +1,17 @@
-mod camera;
+// mod camera;
 mod gui;
 mod sol;
 
-use crate::gui::describe_body;
+// use crate::gui::{describe_body, click_body};
 use crate::sol::celestial_body::CelestialBody;
 use crate::sol::reality_calulator::{calculate_new_positions, default_system};
 
+use crate::gui::ui_selected_body::describe_body;
+use crate::gui::ui_follow_body::click_body;
+
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use bevy_mod_picking::prelude::*;
-use camera::SolCameraPlugin;
+// use camera::SolCameraPlugin;
 use gui::SolGuiPlugin;
 
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
@@ -23,8 +26,6 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_systems(Update, bevy::window::close_on_esc)
         .add_state::<SimState>()
-        // Camera Setup
-        .add_plugins(SolCameraPlugin)
         // GUI
         .add_plugins(SolGuiPlugin)
         // Background
@@ -64,14 +65,13 @@ fn big_bang(
                 transform,
                 ..default()
             },
-            // On::<Pointer<Click>>::run(click_body),
+            On::<Pointer<Click>>::run(click_body),
             On::<Pointer<Over>>::run(describe_body),
         ));
     }
 }
 
 fn update_positions(time: Res<Time>, mut query: Query<(&mut CelestialBody, &mut Transform)>) {
-
     let bodies: Vec<CelestialBody> = query.iter().map(|(body, _)| body.clone()).collect();
     let cloned = bodies.clone();
     let new_positions = calculate_new_positions(&bodies, cloned);
