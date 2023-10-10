@@ -11,12 +11,18 @@ use bevy_mod_picking::prelude::*;
 use camera::SolCameraPlugin;
 use gui::SolGuiPlugin;
 
-use bevy_mod_picking::prelude::Click;
+#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
+enum SimState {
+    #[default]
+    Running,
+    Paused,
+}
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_systems(Update, bevy::window::close_on_esc)
+        .add_state::<SimState>()
         // Camera Setup
         .add_plugins(SolCameraPlugin)
         // GUI
@@ -31,7 +37,8 @@ fn main() {
         // Insert universe
         .add_systems(Startup, big_bang)
         // Systems to run every frame
-        .add_systems(Update, update_positions)
+        .add_systems(Update, update_positions.run_if(in_state(SimState::Running)))
+        .add_systems(Update, pause_on_space)
         // .add_systems(Update, calculate_collisions)
         .run();
 }
@@ -63,8 +70,8 @@ fn big_bang(
     }
 }
 
-
 fn update_positions(time: Res<Time>, mut query: Query<(&mut CelestialBody, &mut Transform)>) {
+
     let bodies: Vec<CelestialBody> = query.iter().map(|(body, _)| body.clone()).collect();
     let cloned = bodies.clone();
     let new_positions = calculate_new_positions(&bodies, cloned);
@@ -79,5 +86,29 @@ fn update_positions(time: Res<Time>, mut query: Query<(&mut CelestialBody, &mut 
         body.pos = new_body.pos;
         body.momentum = new_body.momentum;
         transform.translation = Vec3::new(body.pos.x, body.pos.y, 0.);
+    }
+}
+
+fn pause_on_space(
+    state: Res<State<SimState>>,
+    mut next_state: ResMut<NextState<SimState>>,
+    focused_windows: Query<(Entity, &Window)>,
+    input: Res<Input<KeyCode>>,
+) {
+    for (_, focus) in focused_windows.iter() {
+        if !focus.focused {
+            continue;
+        }
+        if input.just_pressed(KeyCode::Space) {
+            let sim_state = state.get();
+            match sim_state {
+                SimState::Running => {
+                    next_state.set(SimState::Paused);
+                }
+                SimState::Paused => {
+                    next_state.set(SimState::Running);
+                }
+            }
+        }
     }
 }

@@ -34,6 +34,11 @@ impl Default for UISSelectedBody {
     }
 }
 
+pub fn click_body() {
+    // TODO: Left click follow
+    // Right click delete??
+}
+
 pub fn describe_body(
     mut contexts: EguiContexts,
     mut active_body: ResMut<UISSelectedBody>,
