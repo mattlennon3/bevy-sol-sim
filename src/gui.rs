@@ -1,6 +1,7 @@
 pub mod ui_camera;
 pub mod ui_follow_body;
 pub mod ui_selected_body;
+pub mod ui_spawning;
 
 use bevy::prelude::*;
 // use bevy_mod_picking::prelude::*;
@@ -13,6 +14,7 @@ use bevy_mod_picking::DefaultPickingPlugins;
 use self::ui_selected_body::{render_active_body_gui, UISelectedBody};
 use self::ui_follow_body::{follow_body, UIFollowBody};
 use self::ui_camera::{setup_camera, zoom_2d};
+use self::ui_spawning::{spawn_selected_body_type, UIPlaceState};
 
 pub struct SolGuiPlugin;
 
@@ -21,19 +23,21 @@ impl Plugin for SolGuiPlugin {
         app.add_plugins(EguiPlugin)
             .add_plugins(FlyCameraPlugin)
             .add_plugins(DefaultPickingPlugins)
+            .insert_resource(UIPlaceState::default())
             .insert_resource(UISelectedBody::default())
             .insert_resource(UIFollowBody::default())
             .add_systems(Startup, setup_camera)
             .add_systems(Startup, setup_gui)
             .add_systems(Update, render_active_body_gui)
             .add_systems(Update, zoom_2d)
+            .add_systems(Update, spawn_selected_body_type)
             .add_systems(Update, follow_body);
     }
 }
 
 fn setup_gui(mut contexts: EguiContexts) {
     contexts.ctx_mut().set_visuals(egui::Visuals {
-        window_rounding: 0.0.into(),
+        window_rounding: 5.0.into(),
         ..Default::default()
     });
 }

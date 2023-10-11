@@ -3,11 +3,14 @@ use bevy::input::mouse::MouseWheel;
 use bevy_fly_camera::FlyCamera2d;
 use bevy_mod_picking::prelude::RaycastPickCamera;
 
+#[derive(Component)]
+pub struct MainCamera;
+
 pub fn setup_camera(mut commands: Commands) {
     commands
         .spawn(Camera2dBundle::default())
-        .insert(RaycastPickCamera::default())
-        .insert(FlyCamera2d::default());
+        .insert(FlyCamera2d::default())
+        .insert((RaycastPickCamera::default(), MainCamera));
 }
 
 pub fn zoom_2d(

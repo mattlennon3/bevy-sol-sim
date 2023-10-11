@@ -1,17 +1,14 @@
-// mod camera;
 mod gui;
 mod sol;
+mod boundry;
 
-// use crate::gui::{describe_body, click_body};
+use crate::boundry::spawn_body;
 use crate::sol::celestial_body::CelestialBody;
 use crate::sol::reality_calulator::{calculate_new_positions, default_system};
 
-use crate::gui::ui_selected_body::describe_body;
-use crate::gui::ui_follow_body::click_body;
 
-use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
-use bevy_mod_picking::prelude::*;
-// use camera::SolCameraPlugin;
+use bevy::prelude::*;
+// use bevy_mod_picking::prelude::*;
 use gui::SolGuiPlugin;
 
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
@@ -51,23 +48,7 @@ fn big_bang(
 ) {
     info!("BANG");
     for body in default_system().clone() {
-        let transform = Transform::from_translation(Vec3::new(body.pos.x, body.pos.y, 0.));
-        let radius = body.radius;
-        let colour = body.get_surface_colour();
-
-        commands.spawn((
-            body,
-            PickableBundle::default(),
-            RaycastPickTarget::default(),
-            MaterialMesh2dBundle {
-                mesh: meshes.add(shape::Circle::new(radius).into()).into(),
-                material: materials.add(ColorMaterial::from(colour)),
-                transform,
-                ..default()
-            },
-            On::<Pointer<Click>>::run(click_body),
-            On::<Pointer<Over>>::run(describe_body),
-        ));
+        spawn_body(body, &mut commands, &mut meshes, &mut materials);
     }
 }
 
