@@ -52,11 +52,9 @@ pub fn spawn_selected_body_type(
                 };
                 let momentum = Vector2D { x: 0.0, y: 0.0 };
                 let body = CelestialBody::new(body_type, pos, 1.0, momentum);
-                info!("Spawning {:?}", body);
 
                 spawn_body(body, &mut commands, &mut meshes, &mut materials);
-
-                place_state.body_type = None;
+                // place_state.body_type = None;
             }
         }
     }

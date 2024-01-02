@@ -51,6 +51,9 @@ pub fn render_active_body_gui(
                       ui.label(format!("Mass: {:?}", body.mass));
                   });
                   ui.horizontal(|ui| {
+                      ui.label(format!("Radius: {:.4}", body.radius));
+                  });
+                  ui.horizontal(|ui| {
                       // TODO: What is this unit?
                       ui.label(format!("Speed: {:.4} mps", body.speed()));
                   });

@@ -1,6 +1,7 @@
 pub mod ui_camera;
 pub mod ui_follow_body;
 pub mod ui_selected_body;
+pub mod ui_bottom_panel;
 pub mod ui_spawning;
 
 use bevy::prelude::*;
@@ -12,6 +13,8 @@ use bevy_fly_camera::FlyCameraPlugin;
 use bevy_mod_picking::DefaultPickingPlugins;
 
 use self::ui_selected_body::{render_active_body_gui, UISelectedBody};
+// use self::ui_bottom_panel::{UIPickedBody};
+use self::ui_bottom_panel::{render_bottom_panel_gui, UIPickedBody};
 use self::ui_follow_body::{follow_body, UIFollowBody};
 use self::ui_camera::{setup_camera, zoom_2d};
 use self::ui_spawning::{spawn_selected_body_type, UIPlaceState};
@@ -26,9 +29,11 @@ impl Plugin for SolGuiPlugin {
             .insert_resource(UIPlaceState::default())
             .insert_resource(UISelectedBody::default())
             .insert_resource(UIFollowBody::default())
+            .insert_resource(UIPickedBody::default())
             .add_systems(Startup, setup_camera)
             .add_systems(Startup, setup_gui)
             .add_systems(Update, render_active_body_gui)
+            .add_systems(Update, render_bottom_panel_gui)
             .add_systems(Update, zoom_2d)
             .add_systems(Update, spawn_selected_body_type)
             .add_systems(Update, follow_body);

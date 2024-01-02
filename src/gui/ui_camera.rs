@@ -26,7 +26,7 @@ pub fn zoom_2d(
             // Scroll down
             projection.scale *= 1.05;
         }
-        // always ensure you end up with sane values
-        projection.scale = projection.scale.clamp(0.5, 5.0);
+        // always ensure you end up with same values
+        projection.scale = projection.scale.clamp(0.5, 200.0);
     }
 }
