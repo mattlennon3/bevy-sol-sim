@@ -67,6 +67,20 @@ impl CelestialBody {
 
     pub fn get_default_radius(body_type: CelestialType, mass: f32) -> f32 {
         // TODO: Do something with mass
+
+        const SMALL_MASS_PLANET: f32 = 15.0;
+        // // small mass planets
+        // R = M^0.55
+        // // large mass bodies
+        // R = M^0.01
+
+        // let pow: f32 = match mass < SMALL_MASS_PLANET {
+        //     true => 0.55,
+        //     false => 0.01,
+        // };
+
+        // return mass.powf(pow);
+
         match body_type {
             CelestialType::STAR => 22.0,
             CelestialType::PLANET => 8.0,
@@ -87,6 +101,10 @@ impl CelestialBody {
 
     pub fn speed(&self) -> f32 {
         self.momentum.length() / self.mass
+    }
+
+    pub fn get_radius(&self) -> f32 {
+        self.radius
     }
 
     // TODO: Make material colour depend on body type and mass

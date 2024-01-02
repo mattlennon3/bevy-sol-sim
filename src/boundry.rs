@@ -41,6 +41,7 @@ pub fn spawn_body (body: CelestialBody, commands: &mut Commands, meshes: &mut Re
     let radius = body.radius;
     let colour = body.get_surface_colour();
 
+    info!("Spawning {:?}", body);
     commands.spawn((
         body,
         PickableBundle::default(),
