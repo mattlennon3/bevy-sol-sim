@@ -6,9 +6,7 @@ use bevy_egui::{
 use bevy_mod_picking::prelude::*;
 use vector2d::Vector2D;
 
-use crate::{sol::{celestial_body::CelestialBody, celestial_type::CelestialType}, boundry::{create_celestial_body_mesh, create_celestial_body_scene, spawn_body}};
-
-use super::asset_loader::SceneAssets;
+use crate::{sol::{celestial_body::CelestialBody, celestial_type::CelestialType}, boundry::{create_celestial_body_mesh, create_celestial_body_scene, spawn_body}, gui::assets::asset_loader::SceneAssets};
 
 pub trait InSimuation {
     fn run(&self);

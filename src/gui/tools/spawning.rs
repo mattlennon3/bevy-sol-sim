@@ -4,10 +4,12 @@ use vector2d::Vector2D;
 
 use crate::{
     boundry::spawn_body,
-    sol::{celestial_body::CelestialBody, celestial_type::CelestialType},
+    sol::{celestial_body::CelestialBody, celestial_type::CelestialType}, gui::camera::ui_camera::MainCamera,
 };
 
-use super::{ui_camera::MainCamera, ui_follow_body::UIFollowBody};
+use super::follow_body::UIFollowBody;
+
+// use super::{ui_camera::MainCamera, ui_follow_body::UIFollowBody};
 
 #[derive(Resource, Debug)]
 pub struct UIPlaceState {

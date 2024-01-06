@@ -1,10 +1,8 @@
-pub mod asset_loader;
-pub mod mouse_states;
-pub mod ui_camera;
-pub mod ui_follow_body;
-pub mod ui_selected_body;
-pub mod ui_bottom_panel;
-pub mod ui_spawning;
+pub mod kb_mouse;
+pub mod camera;
+pub mod assets;
+pub mod panels;
+pub mod tools;
 
 use bevy::prelude::*;
 // use bevy_mod_picking::prelude::*;
@@ -14,13 +12,13 @@ use bevy_egui::egui::{self};
 use bevy_fly_camera::FlyCameraPlugin;
 use bevy_mod_picking::DefaultPickingPlugins;
 
-use self::ui_selected_body::{render_active_body_gui, UISelectedBody};
-// use self::ui_bottom_panel::{UIPickedBody};
-use self::ui_bottom_panel::{render_bottom_panel_gui, UIPickedBody};
-use self::ui_follow_body::{follow_body, UIFollowBody};
-use self::ui_camera::{setup_camera, zoom_2d};
-use self::ui_spawning::{spawn_selected_body_type, UIPlaceState};
-use self::asset_loader::AssetLoaderPlugin;
+use self::panels::ui_selected_body::{render_active_body_gui, UISelectedBody};
+// use self::bottom_panel::{UIPickedBody};
+use self::panels::ui_bottom_panel::{render_bottom_panel_gui, UIPickedBody};
+use self::tools::follow_body::{follow_body, UIFollowBody};
+use self::tools::spawning::{spawn_selected_body_type, UIPlaceState};
+use self::camera::ui_camera::{setup_camera, zoom_2d};
+use self::assets::asset_loader::AssetLoaderPlugin;
 
 pub struct SolGuiPlugin;
 

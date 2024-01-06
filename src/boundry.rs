@@ -1,10 +1,10 @@
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use bevy_mod_picking::prelude::*;
 
-use crate::gui::asset_loader::SceneAssets;
+use crate::gui::assets::asset_loader::SceneAssets;
 use crate::sol::celestial_body::CelestialBody;
-use crate::gui::ui_selected_body::describe_body;
-use crate::gui::ui_follow_body::click_body;
+use crate::gui::panels::ui_selected_body::describe_body;
+use crate::gui::tools::follow_body::click_body;
 
 // TODO:
 // READ THIS
