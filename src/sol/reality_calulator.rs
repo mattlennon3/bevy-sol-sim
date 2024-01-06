@@ -28,7 +28,7 @@ pub fn calculate_new_positions(
         let mut forces: Vec<Vector2D<f32>> = vec![];
 
         for other_body in all_objects {
-            // Check against a9ll other bodies apart from the current one
+            // Check against all other bodies apart from the current one
             // **TODO** Check this actually works
             if other_body != body {
                 forces.push(body.get_force_vector(&other_body));
@@ -56,7 +56,8 @@ pub fn calculate_new_positions(
 }
 
 pub fn default_system() -> SystemContents {
-    let star = CelestialBody::new_star(Vector2D { x: 0.0, y: 0.0 }, Vector2D { x: 0.0, y: 0.0 });
+    let star_mass: f32 = 2.0 * 1000.0;
+    let star = CelestialBody::new_star(Vector2D { x: 0.0, y: 0.0 }, Vector2D { x: 0.0, y: 0.0 }, star_mass);
     // let star2 = CelestialBody {
     //     name: CelestialBody::get_name(),
     //     body_type: CelestialType::STAR,
@@ -70,7 +71,7 @@ pub fn default_system() -> SystemContents {
     //     trail: vec![],
     // };
     let planet =
-        CelestialBody::new_planet(Vector2D { x: 85.0, y: 0.0 }, Vector2D { x: 0.0, y: 130.0 }, 1.0);
+        CelestialBody::new_planet(Vector2D { x: 850.0, y: 0.0 }, Vector2D { x: 0.0, y: 1330.0 }, 30.0);
     let planet2 = CelestialBody::new_planet(
         Vector2D { x: 0.0, y: -300.0 },
         Vector2D { x: 1300.0, y: 0.0 },

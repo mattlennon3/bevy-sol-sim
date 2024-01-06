@@ -1,3 +1,5 @@
+pub mod asset_loader;
+pub mod mouse_states;
 pub mod ui_camera;
 pub mod ui_follow_body;
 pub mod ui_selected_body;
@@ -18,6 +20,7 @@ use self::ui_bottom_panel::{render_bottom_panel_gui, UIPickedBody};
 use self::ui_follow_body::{follow_body, UIFollowBody};
 use self::ui_camera::{setup_camera, zoom_2d};
 use self::ui_spawning::{spawn_selected_body_type, UIPlaceState};
+use self::asset_loader::AssetLoaderPlugin;
 
 pub struct SolGuiPlugin;
 
@@ -31,6 +34,7 @@ impl Plugin for SolGuiPlugin {
             .insert_resource(UIFollowBody::default())
             .insert_resource(UIPickedBody::default())
             .add_systems(Startup, setup_camera)
+            .add_plugins(AssetLoaderPlugin)
             .add_systems(Startup, setup_gui)
             .add_systems(Update, render_active_body_gui)
             .add_systems(Update, render_bottom_panel_gui)

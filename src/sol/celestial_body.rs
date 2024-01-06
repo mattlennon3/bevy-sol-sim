@@ -1,5 +1,6 @@
 use std::fmt::{Debug, Display, Error, Formatter};
 
+use rand::Rng;
 use ::vector2d::Vector2D;
 use bevy::prelude::{Component, Color, Event, Bundle};
 use rnglib::{Language, RNG};
@@ -39,12 +40,27 @@ impl CelestialBody {
         }
     }
 
+    pub fn new_random(body_type: CelestialType, pos: Vector2D<f32>, momentum: Vector2D<f32>) -> Self {
+        let floor = match body_type {
+            CelestialType::ASTEROID => 1,
+            CelestialType::PLANET => 50,
+            CelestialType::STAR => 700
+        };
+        let ceiling = match body_type {
+            CelestialType::ASTEROID => 5,
+            CelestialType::PLANET => 600,
+            CelestialType::STAR => 3500
+        };
+        // generate number between floor and ceiling
+        let mass = rand::thread_rng().gen_range(floor..ceiling) as f32;
+        CelestialBody::new(body_type, pos, mass, momentum)
+    }
+
     pub fn new_planet(pos: Vector2D<f32>, momentum: Vector2D<f32>, mass: f32) -> Self {
         CelestialBody::new(CelestialType::PLANET, pos, mass, momentum)
     }
 
-    pub fn new_star(pos: Vector2D<f32>, momentum: Vector2D<f32>) -> Self {
-        let mass: f32 = 2.0 * 1000.0;
+    pub fn new_star(pos: Vector2D<f32>, momentum: Vector2D<f32>, mass: f32) -> Self {
         CelestialBody::new(CelestialType::STAR, pos, mass, momentum)
     }
 
@@ -108,6 +124,7 @@ impl CelestialBody {
     }
 
     // TODO: Make material colour depend on body type and mass
+    // maybe actually move to the celestialtype, but put in the constructor and set on the struct?
     pub fn get_surface_colour(&self) -> Color {
         match self.body_type {
             CelestialType::STAR => Color::YELLOW,

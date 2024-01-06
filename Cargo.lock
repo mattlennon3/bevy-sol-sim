@@ -3445,6 +3445,7 @@ dependencies = [
  "bevy_egui",
  "bevy_fly_camera",
  "bevy_mod_picking",
+ "rand",
  "random_name_generator",
  "vector2d",
 ]

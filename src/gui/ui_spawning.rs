@@ -7,7 +7,7 @@ use crate::{
     sol::{celestial_body::CelestialBody, celestial_type::CelestialType},
 };
 
-use super::ui_camera::MainCamera;
+use super::{ui_camera::MainCamera, ui_follow_body::UIFollowBody};
 
 #[derive(Resource, Debug)]
 pub struct UIPlaceState {
@@ -29,6 +29,8 @@ pub fn spawn_selected_body_type(
         (&mut Camera, &mut GlobalTransform),
         (With<RaycastPickCamera>, With<MainCamera>),
     >,
+    follow_body: ResMut<UIFollowBody>,
+    query: Query<&CelestialBody>,
     mouse_input: Res<Input<MouseButton>>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -50,8 +52,22 @@ pub fn spawn_selected_body_type(
                     x: world_position.x,
                     y: world_position.y,
                 };
-                let momentum = Vector2D { x: 0.0, y: 0.0 };
-                let body = CelestialBody::new(body_type, pos, 1.0, momentum);
+                let default_momentum = Vector2D { x: 0.0, y: 0.0 };
+
+                // If following a body, match it's momentum
+                // TODO: This didn't work, bodied started pinging away on spawn...
+                // let momentum = match follow_body.follow {
+                //     Some(entity) => {
+                //         if let Ok(body) = query.get(entity) {
+                //             body.momentum
+                //         } else {
+                //             default_momentum
+                //         }
+                //     },
+                //     None => default_momentum
+                // };
+
+                let body = CelestialBody::new(body_type, pos, 1.0, default_momentum);
 
                 spawn_body(body, &mut commands, &mut meshes, &mut materials);
                 // place_state.body_type = None;
