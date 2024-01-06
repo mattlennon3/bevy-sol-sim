@@ -1,3 +1,5 @@
+use std::alloc::System;
+
 use vector2d::Vector2D;
 
 use super::celestial_body::CelestialBody;
@@ -38,6 +40,8 @@ pub fn calculate_new_positions(
             .iter()
             .fold(Vector2D { x: 0.0, y: 0.0 }, |acc, x| acc + *x);
 
+        // TIME_DELTA_PER_TICK ==  Step value? (no, feels like it would be the wrong value and change the course of the object by updating less often)
+        // also wtf is this calculation??? I feel like TIME_DELTA_PER_TICK should be 1
         body.momentum = body.momentum + cumulitive_forces * TIME_DELTA_PER_TICK;
         body.pos = body.pos + body.momentum / body.mass * TIME_DELTA_PER_TICK;
 
@@ -55,9 +59,29 @@ pub fn calculate_new_positions(
     // self.time = self.time + TIME_DELTA_PER_TICK as f64;
 }
 
+pub fn one_planet_system() -> SystemContents {
+    let star_mass: f32 = 2.0 * 1000.0;
+    let star = CelestialBody::new_star(
+        Vector2D { x: 0.0, y: 0.0 },
+        Vector2D { x: 0.0, y: 0.0 },
+        star_mass,
+    );
+    let planet = CelestialBody::new_planet(
+        Vector2D { x: 850.0, y: 0.0 },
+        Vector2D { x: 0.0, y: 1330.0 },
+        30.0,
+    );
+    let objects = vec![star, planet];
+    return objects;
+}
+
 pub fn default_system() -> SystemContents {
     let star_mass: f32 = 2.0 * 1000.0;
-    let star = CelestialBody::new_star(Vector2D { x: 0.0, y: 0.0 }, Vector2D { x: 0.0, y: 0.0 }, star_mass);
+    let star = CelestialBody::new_star(
+        Vector2D { x: 0.0, y: 0.0 },
+        Vector2D { x: 0.0, y: 0.0 },
+        star_mass,
+    );
     // let star2 = CelestialBody {
     //     name: CelestialBody::get_name(),
     //     body_type: CelestialType::STAR,
@@ -70,22 +94,25 @@ pub fn default_system() -> SystemContents {
     //     radius: 22.0,
     //     trail: vec![],
     // };
-    let planet =
-        CelestialBody::new_planet(Vector2D { x: 850.0, y: 0.0 }, Vector2D { x: 0.0, y: 1330.0 }, 30.0);
+    let planet = CelestialBody::new_planet(
+        Vector2D { x: 850.0, y: 0.0 },
+        Vector2D { x: 0.0, y: 1330.0 },
+        30.0,
+    );
     let planet2 = CelestialBody::new_planet(
         Vector2D { x: 0.0, y: -300.0 },
         Vector2D { x: 1300.0, y: 0.0 },
-        8.0
+        8.0,
     );
     let planet3 = CelestialBody::new_planet(
         Vector2D { x: 240.0, y: 0.0 },
         Vector2D { x: 0.0, y: 2000.0 },
-        10.0
+        10.0,
     );
     let planet4 = CelestialBody::new_planet(
         Vector2D { x: 0.0, y: 450.0 },
         Vector2D { x: 1500.0, y: 0.0 },
-        19.0
+        19.0,
     );
     let planet5 = CelestialBody::new_planet(
         Vector2D {
@@ -93,7 +120,7 @@ pub fn default_system() -> SystemContents {
             y: -500.0,
         },
         Vector2D { x: 700.0, y: 700.0 },
-        20.0
+        20.0,
     );
 
     let objects = vec![star, planet, planet2, planet3, planet4, planet5];

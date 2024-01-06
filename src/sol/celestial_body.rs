@@ -123,6 +123,10 @@ impl CelestialBody {
         self.radius
     }
 
+    pub fn get_gravity(&self) -> f32 {
+        !todo!("Calculate the gravity based on mass");
+    }
+
     // TODO: Make material colour depend on body type and mass
     // maybe actually move to the celestialtype, but put in the constructor and set on the struct?
     pub fn get_surface_colour(&self) -> Color {
