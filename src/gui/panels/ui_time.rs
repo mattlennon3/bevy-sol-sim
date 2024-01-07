@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy::prelude::Time;
+use std::time::Duration;
 
 #[derive(Resource, Debug, Copy, Clone)]
 pub struct SimTime(u64);
@@ -51,9 +52,13 @@ impl Plugin for GameTimePlugin {
     }
 }
 
+/// `Virtual` time related marker
+#[derive(Component)]
+struct VirtualTime;
+
 pub fn time_system(
     mut time: ResMut<SimTime>,
-    actual_time: Res<Time>,
+    mut actual_time: Res<Time<Virtual>>,
     time_state: ResMut<TimeState>,
 ) {
 

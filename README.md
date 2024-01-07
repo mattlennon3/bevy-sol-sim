@@ -10,12 +10,18 @@ At first, a 2d system will be simulated, to show the mechanics work. Later, I ma
   - [x] Basic gravity simulation
   - [ ] A moon should be able to orbit a planet which is orbiting a sun
   - [ ] Scale simple model to real life sized numbers
+  - [ ] Smaller "playable/navigable" scale
   - [ ] Planet radius should be a factor of it's mass and density?
 - [ ] Differing textures for the planets (doesn't have to be accurate)
+- [ ] Camera controls
+  - [ ] Camera focus on 1 object
+  - [ ] Camera auto zoom to show the current system
+  - [ ] Show object information when clicked
 - [ ] Spawn new objects via a GUI
   - [ ] Drag & let go to add velocity/momentum
   - [ ] or "Orbit" placer, shows a ring around the selected object (the sun usually)
 - [ ] Collision & destruction / separation into asteroids
+  - Rewatch https://www.youtube.com/watch?v=pm4LLMsKJQg for colission system set solution?
   - [ ] Hitbox should be at the edge of the radius, not the center
   - [ ] Mass addition/subtraction from a collision
     - [ ] Planet will absorb any asteroid 1/100th of it's size, otherwise boom
