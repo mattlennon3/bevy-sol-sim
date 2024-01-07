@@ -66,7 +66,7 @@ pub fn time_system(
     // Then we can use the time multiplier to speed up or slow down time
     actual_time.delta_seconds();
     actual_time.relative_speed();
-    actual_time.set_relative_speed(ratio);
+    // actual_time.set_relative_speed(ratio);
 
 
     match time_state.state {

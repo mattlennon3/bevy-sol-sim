@@ -1,4 +1,5 @@
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
+use bevy_mod_picking::backends::raycast::RaycastPickable;
 use bevy_mod_picking::prelude::*;
 
 use crate::gui::assets::asset_loader::SceneAssets;
@@ -18,15 +19,15 @@ struct CelestialBodyBundle {
     body: CelestialBody,
     clicked: PickableBundle,
     over: PickableBundle,
-    raycast: RaycastPickTarget,
+    // raycast: RaycastPickable,
     material_mesh: MaterialMesh2dBundle<ColorMaterial>,
 }
 
-impl Plugin for CelestialBodyBundle {
-    fn build(&self, app: &mut App) {
+// impl Plugin for CelestialBodyBundle {
+//     fn build(&self, app: &mut App) {
 
-    }
-}
+//     }
+// }
 
 // impl Default for CelestialBodyBundle {
 //     fn default() -> Self {
@@ -50,7 +51,7 @@ pub fn spawn_body (body: CelestialBody, commands: &mut Commands, meshes: &mut Re
     commands.spawn((
         body,
         PickableBundle::default(),
-        RaycastPickTarget::default(),
+        RaycastPickable,
         mesh,
         On::<Pointer<Click>>::run(click_body),
         On::<Pointer<Over>>::run(describe_body),

@@ -17,10 +17,10 @@ opt-level = 3
 
 [dependencies]
 # https://bevyengine.org/learn/book/getting-started/setup/
-bevy = { version = "0.11.3", features = ["dynamic_linking"] }
+bevy = { version = "0.12.*", features = ["dynamic_linking"] }
 vector2d = "2.2.0"
 random_name_generator = "0.3.6"
 bevy_fly_camera = {path = "../bevy_fly_camera"}
-bevy_egui = {version = "0.22.0"}
-bevy_mod_picking = {version = "0.15.0"}
+bevy_egui = {version = "0.24.0"}
+bevy_mod_picking = {version = "0.17.0"}
 rand = "0.8.5"

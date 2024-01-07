@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 use bevy_egui::EguiContexts;
-use bevy_mod_picking::prelude::*;
+use bevy_mod_picking::{prelude::*, backends::raycast::RaycastPickable};
 
-use crate::sol::celestial_body::CelestialBody;
+use crate::{sol::celestial_body::CelestialBody, gui::camera::ui_camera::MainCamera};
 
 #[derive(Resource, Debug)]
 pub struct UIFollowBody {
@@ -29,8 +29,12 @@ pub fn follow_body(
     mut follow_body: ResMut<UIFollowBody>,
     mut egui_contexts: EguiContexts,
     query: Query<&CelestialBody>,
-    mut q: Query<&mut Transform, With<RaycastPickCamera>>,
-	  keyboard_input: Res<Input<KeyCode>>,
+    mut q: Query<&mut Transform, With<RaycastPickable>>, // TODO remove  RaycastPickable and fix this fn
+    camera_q: Query<
+        (&mut Camera, &mut GlobalTransform),
+        With<MainCamera>, //With<RaycastPickable>,
+    >,
+    keyboard_input: Res<Input<KeyCode>>,
 ) {
     match follow_body.follow {
         Some(followed) => {

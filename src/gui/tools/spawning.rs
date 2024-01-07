@@ -1,10 +1,11 @@
 use bevy::{input::mouse, prelude::*};
-use bevy_mod_picking::prelude::*;
+use bevy_mod_picking::{backends::raycast::RaycastPickable, prelude::*};
 use vector2d::Vector2D;
 
 use crate::{
     boundry::spawn_body,
-    sol::{celestial_body::CelestialBody, celestial_type::CelestialType}, gui::camera::ui_camera::MainCamera,
+    gui::camera::ui_camera::MainCamera,
+    sol::{celestial_body::CelestialBody, celestial_type::CelestialType},
 };
 
 use super::follow_body::UIFollowBody;
@@ -29,7 +30,7 @@ pub fn spawn_selected_body_type(
     mut place_state: ResMut<UIPlaceState>,
     camera_q: Query<
         (&mut Camera, &mut GlobalTransform),
-        (With<RaycastPickCamera>, With<MainCamera>),
+        With<MainCamera>, //With<RaycastPickable>,
     >,
     follow_body: ResMut<UIFollowBody>,
     query: Query<&CelestialBody>,
@@ -42,8 +43,10 @@ pub fn spawn_selected_body_type(
     if let Some(body_type) = place_state.body_type {
         if mouse_input.just_pressed(MouseButton::Left) {
             let window = windows.single();
+            if camera_q.is_empty() {
+                return;
+            }
             let (camera, camera_transform) = camera_q.single();
-
             // https://bevy-cheatbook.github.io/cookbook/cursor2world.html
             if let Some(world_position) = window
                 .cursor_position()
