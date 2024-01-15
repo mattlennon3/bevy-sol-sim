@@ -12,6 +12,7 @@ use bevy_egui::egui::{self};
 use bevy_fly_camera::FlyCameraPlugin;
 use bevy_mod_picking::DefaultPickingPlugins;
 
+use self::kb_mouse::mouse_states::UIMouseState;
 use self::panels::ui_selected_body::{render_active_body_gui, UISelectedBody};
 // use self::bottom_panel::{UIPickedBody};
 use self::panels::ui_bottom_panel::{render_bottom_panel_gui, UIPickedBody};
@@ -31,6 +32,7 @@ impl Plugin for SolGuiPlugin {
             .insert_resource(UISelectedBody::default())
             .insert_resource(UIFollowBody::default())
             .insert_resource(UIPickedBody::default())
+            .insert_resource(UIMouseState::default())
             .add_systems(Startup, setup_camera)
             .add_plugins(AssetLoaderPlugin)
             .add_systems(Startup, setup_gui)

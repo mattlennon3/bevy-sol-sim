@@ -2,8 +2,8 @@ use bevy::prelude::*;
 
 #[derive(Resource)]
 pub struct UIMouseState {
-  left: LeftClickActionState,
-  right: RightClickActionState
+  pub left: LeftClickActionState,
+  pub right: RightClickActionState
 }
 
 impl UIMouseState {
@@ -15,15 +15,21 @@ impl UIMouseState {
   }
 }
 
-impl Plugin for UIMouseState {
-  fn build(&self, app: &mut App) {
-      app.insert_resource(UIMouseState::new());
+impl Default for UIMouseState {
+  fn default() -> Self {
+      Self::new()
   }
 }
 
+// impl Plugin for UIMouseState {
+//   fn build(&self, app: &mut App) {
+//       app.insert_resource(UIMouseState::new());
+//   }
+// }
 
-#[derive(Default)]
-enum LeftClickActionState {
+
+#[derive(Default, Eq, PartialEq)]
+pub enum LeftClickActionState {
   #[default]
   Selecting,
   Spawning,
@@ -32,8 +38,8 @@ enum LeftClickActionState {
   // Empty, ??
 }
 
-#[derive(Default)]
-enum RightClickActionState {
+#[derive(Default, Eq, PartialEq)]
+pub enum RightClickActionState {
   #[default]
   Selecting,
   // Removing,

@@ -18,7 +18,7 @@ use crate::gui::tools::follow_body::click_body;
 struct CelestialBodyBundle {
     body: CelestialBody,
     clicked: PickableBundle,
-    over: PickableBundle,
+    // over: PickableBundle,
     // raycast: RaycastPickable,
     material_mesh: MaterialMesh2dBundle<ColorMaterial>,
 }
