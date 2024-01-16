@@ -2,6 +2,7 @@ pub mod kb_mouse;
 pub mod camera;
 pub mod assets;
 pub mod panels;
+pub mod constants;
 pub mod tools;
 
 use bevy::prelude::*;
@@ -17,7 +18,7 @@ use self::panels::ui_selected_body::{render_active_body_gui, UISelectedBody};
 // use self::bottom_panel::{UIPickedBody};
 use self::panels::ui_bottom_panel::{render_bottom_panel_gui, UIPickedBody};
 use self::tools::follow_body::{follow_body, UIFollowBody};
-use self::tools::spawning::{spawn_selected_body_type, UIPlaceState};
+use self::tools::spawning::SpawningPlugin;
 use self::camera::ui_camera::{setup_camera, zoom_2d};
 use self::assets::asset_loader::AssetLoaderPlugin;
 
@@ -28,7 +29,7 @@ impl Plugin for SolGuiPlugin {
         app.add_plugins(EguiPlugin)
             .add_plugins(FlyCameraPlugin)
             .add_plugins(DefaultPickingPlugins)
-            .insert_resource(UIPlaceState::default())
+            .add_plugins(SpawningPlugin)
             .insert_resource(UISelectedBody::default())
             .insert_resource(UIFollowBody::default())
             .insert_resource(UIPickedBody::default())
@@ -39,7 +40,6 @@ impl Plugin for SolGuiPlugin {
             .add_systems(Update, render_active_body_gui)
             .add_systems(Update, render_bottom_panel_gui)
             .add_systems(Update, zoom_2d)
-            .add_systems(Update, spawn_selected_body_type)
             .add_systems(Update, follow_body);
     }
 }

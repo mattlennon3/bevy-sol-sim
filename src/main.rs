@@ -8,6 +8,7 @@ use crate::sol::celestial_body::CelestialBody;
 use crate::sol::reality_calulator::{calculate_new_positions, default_system, one_planet_system};
 
 use bevy::prelude::*;
+use boundry::Simulated;
 // use bevy_mod_picking::prelude::*;
 use gui::SolGuiPlugin;
 use gui::panels::ui_time::TimeState;
@@ -48,11 +49,13 @@ fn big_bang(
 fn update_positions(
     time: Res<Time>,
     time_state: ResMut<TimeState>,
-    mut query: Query<(&mut CelestialBody, &mut Transform)>,
+    mut query: Query<(&mut CelestialBody, &mut Transform), With<Simulated>>,
 ) {
     let bodies: Vec<CelestialBody> = query.iter().map(|(body, _)| body.clone()).collect();
     let cloned = bodies.clone();
     let new_positions = calculate_new_positions(&bodies, cloned);
+
+    // println!("Simulated Bodies: {:?}", bodies.len());
 
     for (mut body, mut transform) in query.iter_mut() {
         let new_body = new_positions

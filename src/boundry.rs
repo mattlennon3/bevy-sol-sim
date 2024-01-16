@@ -13,6 +13,8 @@ use crate::gui::tools::follow_body::click_body;
 
 // Bundles vs tuples
 
+#[derive(Component)]
+pub struct Simulated;
 
 #[derive(Bundle)]
 struct CelestialBodyBundle {
@@ -52,6 +54,7 @@ pub fn spawn_body (body: CelestialBody, commands: &mut Commands, meshes: &mut Re
         body,
         PickableBundle::default(),
         RaycastPickable,
+        Simulated,
         mesh,
         On::<Pointer<Click>>::run(click_body),
         On::<Pointer<Over>>::run(describe_body),

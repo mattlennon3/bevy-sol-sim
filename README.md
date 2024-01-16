@@ -48,7 +48,9 @@ Toggle between 2d and 3d? or just rewrite in 3d...
 Create a single object system for easier testing. Test/implement the radius calculation from mass, density etc
 Then make the camera auto zoom work for one body, then two
 you could even do the orbit calculations with this setup
+
 Also time.. I need to fix time. Fast forwarding, rewinding etc
+// Time fix? https://bevy-cheatbook.github.io/fundamentals/fixed-timestep.html
 
 then hopefully be familiar with bevy again to fix the click actions and continue with the goals.
   It seems like bevy_mod_picking has been changed to be more agnostic and work with a variety of rendering backends

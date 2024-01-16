@@ -1,6 +1,7 @@
 use std::fmt::{Debug, Display, Error, Formatter};
+use bevy::prelude::Component;
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Clone, Copy, Component)]
 pub enum CelestialType {
     STAR,
     PLANET,

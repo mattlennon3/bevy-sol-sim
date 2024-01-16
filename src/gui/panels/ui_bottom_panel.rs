@@ -6,7 +6,7 @@ use bevy_egui::{
 use bevy_mod_picking::prelude::*;
 use vector2d::Vector2D;
 
-use crate::{sol::{celestial_body::CelestialBody, celestial_type::CelestialType}, boundry::{create_celestial_body_mesh, create_celestial_body_scene, spawn_body}, gui::assets::asset_loader::SceneAssets};
+use crate::{sol::{celestial_body::CelestialBody, celestial_type::CelestialType}, boundry::{create_celestial_body_mesh, create_celestial_body_scene, spawn_body}, gui::{assets::asset_loader::SceneAssets, tools::spawning::{UIPlaceState, spawn_spawning_body}, kb_mouse::mouse_states::UIMouseState}};
 
 pub trait InSimuation {
     fn run(&self);
@@ -37,6 +37,8 @@ pub fn render_bottom_panel_gui(
     mut commands: Commands,
     mut picked_body: ResMut<UIPickedBody>,
     // query: Query<&CelestialBody>,
+    mut mouse_state: ResMut<UIMouseState>,
+    mut place_state: ResMut<UIPlaceState>,
     mut egui_contexts: EguiContexts,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
@@ -77,12 +79,13 @@ pub fn render_bottom_panel_gui(
                             
                             // TODO: INSTEAD OF THIS, Enable a click-to-spawn tool
                             
-                            let pos = Vector2D { x: 240.0, y: 0.0 };
-                            let momentum = Vector2D { x: 0.0, y: 100.0 };
+                            // let pos = Vector2D { x: 240.0, y: 0.0 };
+                            // let momentum = Vector2D { x: 0.0, y: 100.0 };
 
-                            let body = CelestialBody::new_random(CelestialType::ASTEROID, pos, momentum);
-
-                            spawn_body(body, &mut commands, &mut meshes, &mut materials);
+                            // let body = CelestialBody::new_random(CelestialType::ASTEROID, pos, momentum);
+                            // place_state.body_type = Some(CelestialType::ASTEROID);
+                            spawn_spawning_body(CelestialType::PLANET, &mut mouse_state, &mut commands);
+                            // spawn_body(body, &mut commands, &mut meshes, &mut materials);
 
                         } else {
                             // Change text or show button in pressed state if active
