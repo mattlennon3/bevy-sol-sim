@@ -4,9 +4,16 @@ use bevy_egui::{
     EguiContexts,
 };
 use bevy_mod_picking::prelude::*;
-use vector2d::Vector2D;
 
-use crate::{sol::{celestial_body::CelestialBody, celestial_type::CelestialType}, boundry::{create_celestial_body_mesh, create_celestial_body_scene, spawn_body}, gui::{assets::asset_loader::SceneAssets, tools::spawning::{UIPlaceState, spawn_spawning_body}, kb_mouse::mouse_states::UIMouseState}};
+use crate::{
+    boundry::create_celestial_body_scene,
+    gui::{
+        assets::asset_loader::SceneAssets,
+        kb_mouse::mouse_states::{LeftClickActionState, UIMouseState},
+        tools::spawning::{EndSpawningEvent, SpawningBody, StartSpawningEvent, UIPlaceState},
+    },
+    sol::{celestial_body::CelestialBody, celestial_type::CelestialType},
+};
 
 pub trait InSimuation {
     fn run(&self);
@@ -37,16 +44,17 @@ pub fn render_bottom_panel_gui(
     mut commands: Commands,
     mut picked_body: ResMut<UIPickedBody>,
     // query: Query<&CelestialBody>,
+    spawning_entity: Query<Entity, With<SpawningBody>>,
     mut mouse_state: ResMut<UIMouseState>,
+    mut start_spawning: EventWriter<StartSpawningEvent>,
+    mut end_spawning: EventWriter<EndSpawningEvent>,
     mut place_state: ResMut<UIPlaceState>,
     mut egui_contexts: EguiContexts,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-        scene_assets: Res<SceneAssets>,
+    scene_assets: Res<SceneAssets>,
 ) {
-
-    let asteroid_scene = 
-        create_celestial_body_scene(30.0,  scene_assets);
+    let asteroid_scene = create_celestial_body_scene(30.0, scene_assets);
 
     let control_spacer_width = 60.0;
 
@@ -67,31 +75,26 @@ pub fn render_bottom_panel_gui(
                         //     *rendered_texture_id,
                         //     [256.0, 256.0],
                         // ));
-
                         // ui.menu_button("X", |ui| {
                         //     if ui.button("X").clicked() {
                         //     }
                         // });
 
-
-                        if ui.button("Spawn").clicked() {
-                            // spawn asteroid
-                            
-                            // TODO: INSTEAD OF THIS, Enable a click-to-spawn tool
-                            
-                            // let pos = Vector2D { x: 240.0, y: 0.0 };
-                            // let momentum = Vector2D { x: 0.0, y: 100.0 };
-
-                            // let body = CelestialBody::new_random(CelestialType::ASTEROID, pos, momentum);
-                            // place_state.body_type = Some(CelestialType::ASTEROID);
-                            spawn_spawning_body(CelestialType::PLANET, &mut mouse_state, &mut commands);
-                            // spawn_body(body, &mut commands, &mut meshes, &mut materials);
-
+                        if mouse_state.left == LeftClickActionState::Spawning {
+                            if ui
+                                .add_enabled(true, egui::Button::new("**Spawning**"))
+                                .clicked()
+                            {
+                                // remove_spawning_body(&mut commands, &mut mouse_state, spawning_entity);
+                                // Keep this, stops multiple spawning entities which causes a crash in the cursor bind fn
+                                end_spawning.send(EndSpawningEvent);
+                            }
                         } else {
-                            // Change text or show button in pressed state if active
-                            // ui.button().
+                            if ui.add_enabled(true, egui::Button::new("Spawn")).clicked() {
+                                // spawn_spawning_body(CelestialType::ASTEROID, &mut mouse_state, &mut commands);
+                                start_spawning.send(StartSpawningEvent(CelestialType::ASTEROID));
+                            }
                         }
-                        
                     });
                     ui.horizontal(|ui| {
                         ui.label(format!("Asteroid"));
@@ -102,6 +105,18 @@ pub fn render_bottom_panel_gui(
                 ui.vertical(|ui| {
                     ui.horizontal(|ui| {
                         // TODO Image of Planet
+                        if mouse_state.left == LeftClickActionState::Spawning {
+                            if ui
+                                .add_enabled(true, egui::Button::new("**Spawning**"))
+                                .clicked()
+                            {
+                                end_spawning.send(EndSpawningEvent);
+                            }
+                        } else {
+                            if ui.add_enabled(true, egui::Button::new("Spawn")).clicked() {
+                                start_spawning.send(StartSpawningEvent(CelestialType::PLANET));
+                            }
+                        }
                     });
                     ui.horizontal(|ui| {
                         ui.label(format!("Planet"));
@@ -112,6 +127,18 @@ pub fn render_bottom_panel_gui(
                 ui.vertical(|ui| {
                     ui.horizontal(|ui| {
                         // TODO Image of Star
+                        if mouse_state.left == LeftClickActionState::Spawning {
+                            if ui
+                                .add_enabled(true, egui::Button::new("**Spawning**"))
+                                .clicked()
+                            {
+                                end_spawning.send(EndSpawningEvent);
+                            }
+                        } else {
+                            if ui.add_enabled(true, egui::Button::new("Spawn")).clicked() {
+                                start_spawning.send(StartSpawningEvent(CelestialType::STAR));
+                            }
+                        }
                     });
                     ui.horizontal(|ui| {
                         ui.label(format!("Star"));

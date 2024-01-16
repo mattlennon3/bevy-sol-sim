@@ -1,17 +1,12 @@
-use bevy::{
-    ecs::query,
-    input::mouse::MouseMotion,
-    prelude::*,
-    transform::commands,
-    window::{Cursor, PrimaryWindow},
-};
+use bevy::{prelude::*, window::PrimaryWindow};
 use vector2d::Vector2D;
 
 use crate::{
     boundry::{create_celestial_body_mesh, Simulated},
     gui::{
         camera::ui_camera::MainCamera,
-        kb_mouse::mouse_states::{LeftClickActionState, UIMouseState}, constants::constants::Z_LEVELS,
+        constants::constants::Z_LEVELS,
+        kb_mouse::mouse_states::{LeftClickActionState, UIMouseState},
     },
     sol::{celestial_body::CelestialBody, celestial_type::CelestialType},
 };
@@ -28,13 +23,31 @@ pub struct UIPlaceState {
 
 pub struct SpawningPlugin;
 
+// TODO's
+/**
+ * Click and drag to add momentum to a body
+ * 
+ * Orbit view
+ *
+ */
+
+#[derive(Event)]
+pub struct StartSpawningEvent(pub CelestialType);
+
+#[derive(Event)]
+pub struct EndSpawningEvent;
+
 impl Plugin for SpawningPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<UIPlaceState>()
-            .add_systems(Update, update_spawning_body_at_cursor)
-            .add_systems(Update, add_spawning_body_to_cursor);
+            .add_event::<StartSpawningEvent>()
+            .add_event::<EndSpawningEvent>()
+            .add_systems(Update, spawning_body_follow_cursor)
+            .add_systems(Update, start_spawn_selection)
+            .add_systems(Update, remove_spawn_selection)
+            .add_systems(Update, spawn_body)
+            .add_systems(Update, spawn_spawning_body);
         // .add_systems(Update, render_click_and_drag_line);
-        // .add_systems(Update, spawn_selected_body_type);
     }
 }
 
@@ -47,43 +60,42 @@ impl Default for UIPlaceState {
     }
 }
 
-pub fn add_spawning_body_to_cursor(
-    // place_state: ResMut<UIPlaceState>,
+// Actually adds the components of the body, so it can be rendered
+pub fn spawn_spawning_body(
+    mut commands: Commands,
     mouse_state: Res<UIMouseState>,
-    q_windows: Query<&Window, With<PrimaryWindow>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
     mut query: Query<
         (&mut Transform, &CelestialType, Entity),
         (With<SpawningBody>, Without<CelestialBody>),
     >,
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+    q_windows: Query<&Window, With<PrimaryWindow>>,
 ) {
-    // TODO: The mouse state is never set to Spawning - so this never runs
-    // I need to figure out what the relation between this mouse state + the spawn_spawning_body fn is
-    if mouse_state.left != LeftClickActionState::Spawning {
-        return;
-    }
-
-    // Get mouse position if it's on screen
-    let Some(position) = q_windows.single().cursor_position() else {
-        return;
-    };
-
+    // Check main query first
     if query.is_empty() {
         return;
     }
 
-    println!("add_spawning_body_to_cursor");
+    if mouse_state.left != LeftClickActionState::Spawning {
+        return;
+    }
+
+    // Check last as it involves calculations
+    let Some(world_position) = get_world_cursor_position(q_windows, q_camera) else {
+        return;
+    };
 
     let (mut transform, body_type, entity) = query.single_mut();
-    transform.translation = Vec3::new(position.x, position.y, 0.0);
+    transform.translation = Vec3::new(world_position.x, world_position.y, Z_LEVELS.background);
 
     let body = CelestialBody::new_random(
         *body_type,
+        // TODO: The transform is awkward here, we should be able to get the position from the transform
         Vector2D {
-            x: position.x,
-            y: position.y,
+            x: world_position.x,
+            y: world_position.y,
         },
         Vector2D { x: 0., y: 0. },
     );
@@ -95,50 +107,84 @@ pub fn add_spawning_body_to_cursor(
     );
 
     commands.entity(entity).insert((mesh, body));
-
-    // place_state.is_added()
-    // if Some(body) = place_state.body_type {
-    //     commands.spawn((
-    //         SpawningBody,
-    //         Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
-    //         GlobalTransform::default(),
-    //         body,
-    //     ));
-    // }
 }
 
-
-pub fn update_spawning_body_at_cursor(
-    place_state: ResMut<UIPlaceState>,
+// Keep following the cursor
+pub fn spawning_body_follow_cursor(
     mouse_state: Res<UIMouseState>,
+    mut q_transform: Query<&mut Transform, (With<SpawningBody>, Without<Simulated>)>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
-    mut query: Query<&mut Transform, (With<SpawningBody>, Without<Simulated>)>,
     q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
-    commands: Commands,
-    // mut meshes: ResMut<Assets<Mesh>>,
-    // mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    // try rendering a body here, the absence of the Simulated struct will prevent it from being simulated (hopefully)
+    if q_transform.is_empty() {
+        return;
+    }
 
     if mouse_state.left != LeftClickActionState::Spawning {
         return;
     }
 
-    if query.is_empty() {
+    if let Some(world_position) = get_world_cursor_position(q_windows, q_camera) {
+        let mut transform = q_transform.single_mut();
+        // update body position to be cursor position
+        transform.translation = Vec3::new(world_position.x, world_position.y, Z_LEVELS.background);
+    }
+}
+
+// Begin selection
+pub fn start_spawn_selection(
+    mut commands: Commands,
+    mut mouse_state: ResMut<UIMouseState>,
+    mut start_spawning: EventReader<StartSpawningEvent>,
+) {
+    if let Some(body_type) = start_spawning.read().last() {
+        info!("Selected for spawn: {:?}", body_type.0);
+        mouse_state.left = LeftClickActionState::Spawning;
+        // Only spawn this component, then detect later and add the full mesh when we know the cursor position
+        commands.spawn((
+            // unwrap event and get body type
+            body_type.0,
+            SpawningBody,
+            Transform::default(),
+        ));
+    }
+}
+
+// Cancel selection
+pub fn remove_spawn_selection(
+    mut commands: Commands,
+    mut mouse_state: ResMut<UIMouseState>,
+    mut end_spawning: EventReader<EndSpawningEvent>,
+    query: Query<Entity, With<SpawningBody>>,
+) {
+    if let Some(_) = end_spawning.read().last() {
+        mouse_state.left = LeftClickActionState::Selecting;
+        if let Ok(entity) = query.get_single() {
+            info!("Cancel spawning body");
+            commands.entity(entity).despawn_recursive();
+        }
+    }
+}
+
+// Remove the SpawningBody component and add the Simulated component
+pub fn spawn_body(
+    mut commands: Commands,
+    mut mouse_state: ResMut<UIMouseState>,
+    mouse: Res<Input<MouseButton>>,
+    query: Query<(Entity, &CelestialBody), With<SpawningBody>>,
+) {
+    if mouse_state.left != LeftClickActionState::Spawning {
         return;
     }
 
-    if let Some(world_position) = get_world_cursor_position(q_windows, q_camera) {
-        let mut transform = query.single_mut();
-        // update body position to be cursor position
-        transform.translation = Vec3::new(world_position.x, world_position.y, Z_LEVELS.background);
-        // eprintln!("World coords: {}/{}", world_position.x, world_position.y);
+    if mouse.just_pressed(MouseButton::Left) {
+        if let Ok((entity, body)) = query.get_single() {
+            info!("Spawned a {:?}, named: {:?}", body.body_type, body.name);
+            commands.entity(entity).remove::<SpawningBody>();
+            commands.entity(entity).insert(Simulated);
+            mouse_state.left = LeftClickActionState::Selecting;
+        }
     }
-    
-    // Get mouse position if it's on screen
-    // let Some(position) = q_windows.single().cursor_position() else {
-    //     return;
-    // };
 }
 
 fn render_click_and_drag_line(mut cursor_evr: EventReader<CursorMoved>) {
@@ -214,27 +260,11 @@ fn render_click_and_drag_line(mut cursor_evr: EventReader<CursorMoved>) {
 //     }
 // }
 
-pub fn spawn_spawning_body(
-    body_type: CelestialType,
-    mouse_state: &mut ResMut<UIMouseState>,
-    // meshes: &mut ResMut<Assets<Mesh>>,
-    //     materials: &mut ResMut<Assets<ColorMaterial>>,
-    commands: &mut Commands,
-) {
-    // let body = CelestialBody::new_random(body_type, pos, momentum);
-    // let mesh = create_celestial_body_mesh(body.radius, body.get_surface_colour(), meshes, materials);
-
-    mouse_state.left = LeftClickActionState::Spawning;
-    println!("Spawn {}", body_type);
-    // Only spawn this component, then detect later and add the full mesh when we know the cursor position
-    commands.spawn((
-        body_type,
-        SpawningBody,
-        // Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
-        Transform::default(), // GlobalTransform::default(),
-                              // mesh,
-    ));
-}
+/**
+ *
+ * ##################### Non-Systems #############################
+ *
+ */
 
 pub fn get_world_cursor_position(
     q_windows: Query<&Window, With<PrimaryWindow>>,

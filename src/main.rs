@@ -40,10 +40,12 @@ fn big_bang(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
+    let system = one_planet_system();
     info!("BANG");
-    for body in one_planet_system().clone() {
+    for body in system.clone() {
         spawn_body(body, &mut commands, &mut meshes, &mut materials);
     }
+    info!("Simulated Bodies: {:?}", system.len());
 }
 
 fn update_positions(
@@ -54,8 +56,6 @@ fn update_positions(
     let bodies: Vec<CelestialBody> = query.iter().map(|(body, _)| body.clone()).collect();
     let cloned = bodies.clone();
     let new_positions = calculate_new_positions(&bodies, cloned);
-
-    // println!("Simulated Bodies: {:?}", bodies.len());
 
     for (mut body, mut transform) in query.iter_mut() {
         let new_body = new_positions
