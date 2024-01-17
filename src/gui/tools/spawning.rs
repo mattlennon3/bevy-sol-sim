@@ -93,11 +93,13 @@ pub fn spawn_spawning_body(
     let body = CelestialBody::new_random(
         *body_type,
         // TODO: The transform is awkward here, we should be able to get the position from the transform
+        // We need to update this later on spawn, as we are just following the cursor atm
         Vector2D {
             x: world_position.x,
             y: world_position.y,
         },
-        Vector2D { x: 0., y: 0. },
+        // TODO: Set from Click + Drag
+        Vector2D { x: 100., y: 100. },
     );
     let mesh = create_celestial_body_mesh(
         body.radius,
@@ -171,15 +173,27 @@ pub fn spawn_body(
     mut commands: Commands,
     mut mouse_state: ResMut<UIMouseState>,
     mouse: Res<Input<MouseButton>>,
-    query: Query<(Entity, &CelestialBody), With<SpawningBody>>,
+    q_windows: Query<&Window, With<PrimaryWindow>>,
+    q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+    mut query: Query<(Entity, &mut CelestialBody), With<SpawningBody>>,
 ) {
     if mouse_state.left != LeftClickActionState::Spawning {
         return;
     }
 
+    // Check last as it involves calculations
+    let Some(world_position) = get_world_cursor_position(q_windows, q_camera) else {
+        return;
+    };
+
     if mouse.just_pressed(MouseButton::Left) {
-        if let Ok((entity, body)) = query.get_single() {
+        if let Ok((entity, mut body)) = query.get_single_mut() {
             info!("Spawned a {:?}, named: {:?}", body.body_type, body.name);
+            // Update position of body, as it is set within the CelestialBody struct
+            body.pos = Vector2D {
+                x: world_position.x,
+                y: world_position.y,
+            };
             commands.entity(entity).remove::<SpawningBody>();
             commands.entity(entity).insert(Simulated);
             mouse_state.left = LeftClickActionState::Selecting;

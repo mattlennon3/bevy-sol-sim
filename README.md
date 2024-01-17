@@ -16,10 +16,14 @@ At first, a 2d system will be simulated, to show the mechanics work. Later, I ma
 - [ ] Camera controls
   - [ ] Camera focus on 1 object
   - [ ] Camera auto zoom to show the current system
+      - [ ] Auto follow the largest object on launch
+      - [ ] Generally "follow" the largest mass (shower thought)
   - [ ] Show object information when clicked
 - [ ] Spawn new objects via a GUI
   - [ ] Drag & let go to add velocity/momentum
   - [ ] or "Orbit" placer, shows a ring around the selected object (the sun usually)
+      - Shows future orbit (todo write document on how to predict orbits)
+      - Show tails (KISS)
 - [ ] Collision & destruction / separation into asteroids
   - Rewatch https://www.youtube.com/watch?v=pm4LLMsKJQg for colission system set solution?
   - [ ] Hitbox should be at the edge of the radius, not the center
@@ -41,6 +45,7 @@ Toggle between 2d and 3d? or just rewrite in 3d...
 ## Crazy future goals
 - [ ] Configuring planet composition (affects collision, radius, mass etc)
 - [ ] Voxel planets / mini spaceship game
+- [ ] Heat/temperature from proximity to the sun/other planets and affecting water/ice etc
 
 
 ### Dev history / coming back from a break
