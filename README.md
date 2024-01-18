@@ -13,6 +13,7 @@ At first, a 2d system will be simulated, to show the mechanics work. Later, I ma
   - [ ] Smaller "playable/navigable" scale
   - [ ] Planet radius should be a factor of it's mass and density?
 - [ ] Differing textures for the planets (doesn't have to be accurate)
+- [ ] Background with starts of different shades of white & scattering of other colours
 - [ ] Camera controls
   - [ ] Camera focus on 1 object
   - [ ] Camera auto zoom to show the current system
