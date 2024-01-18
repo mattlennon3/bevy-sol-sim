@@ -1,32 +1,35 @@
-pub mod kb_mouse;
-pub mod camera;
 pub mod assets;
-pub mod panels;
+pub mod camera;
 pub mod constants;
+pub mod kb_mouse;
+pub mod panels;
 pub mod tools;
 
 use bevy::prelude::*;
 // use bevy_mod_picking::prelude::*;
 
-use bevy_egui::{EguiContexts, EguiPlugin};
+use bevy::window::{WindowRef, WindowResolution};
 use bevy_egui::egui::{self};
+use bevy_egui::{EguiContexts, EguiPlugin};
 use bevy_fly_camera::FlyCameraPlugin;
+use bevy_mod_picking::prelude::EntityEvent;
 use bevy_mod_picking::DefaultPickingPlugins;
 
 use self::kb_mouse::mouse_states::UIMouseState;
 use self::panels::ui_selected_body::{render_active_body_gui, UISelectedBody};
 // use self::bottom_panel::{UIPickedBody};
+use self::assets::asset_loader::AssetLoaderPlugin;
+use self::camera::ui_camera::{setup_camera, zoom_2d};
 use self::panels::ui_bottom_panel::{render_bottom_panel_gui, UIPickedBody};
 use self::tools::follow_body::{follow_body, UIFollowBody};
 use self::tools::spawning::SpawningPlugin;
-use self::camera::ui_camera::{setup_camera, zoom_2d};
-use self::assets::asset_loader::AssetLoaderPlugin;
 
 pub struct SolGuiPlugin;
 
 impl Plugin for SolGuiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(EguiPlugin)
+        app.add_systems(Startup, setup_window_size)
+            .add_plugins(EguiPlugin)
             .add_plugins(FlyCameraPlugin)
             .add_plugins(DefaultPickingPlugins)
             .add_plugins(SpawningPlugin)
@@ -49,4 +52,21 @@ fn setup_gui(mut contexts: EguiContexts) {
         window_rounding: 5.0.into(),
         ..Default::default()
     });
+}
+
+fn setup_window_size(mut windows: Query<&mut Window>) {
+    let Ok(mut window) = windows.get_single_mut() else {
+        return;
+    };
+    // println!("Window height: {:?}", window.physical_height());
+    // println!("Window width: {:?}", window.physical_width());
+    // println!("Window height: {:?}", window.height());
+    // println!("Window width: {:?}", window.width());
+    window.position.set(IVec2::new(0, 0));
+    // window.resolution = WindowResolution::new(
+    //     window.resolution.physical_width() as f32,
+    //     (window.resolution.physical_height() as f32) * 0.9,
+    // );
+    // window.position = WindowPosition::new(IVec2::new(0, 0));
+    // println!("scale_factor: {:?}", window.scale_factor());
 }
