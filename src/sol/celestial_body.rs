@@ -100,7 +100,7 @@ impl CelestialBody {
         match body_type {
             CelestialType::STAR => 22.0,
             CelestialType::PLANET => 8.0,
-            CelestialType::ASTEROID => 0.01,
+            CelestialType::ASTEROID => 1.,
         }
     }
 
@@ -133,7 +133,7 @@ impl CelestialBody {
         match self.body_type {
             CelestialType::STAR => Color::YELLOW,
             CelestialType::PLANET => Color::SEA_GREEN,
-            _ => Color::GRAY,
+            _ => Color::ORANGE,
         }
     }
 }

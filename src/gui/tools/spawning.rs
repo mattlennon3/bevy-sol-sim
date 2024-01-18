@@ -2,7 +2,7 @@ use bevy::{prelude::*, window::PrimaryWindow};
 use vector2d::Vector2D;
 
 use crate::{
-    boundry::{create_celestial_body_mesh, Simulated},
+    boundry::Simulated,
     gui::{
         camera::ui_camera::MainCamera,
         constants::constants::Z_LEVELS,
@@ -111,14 +111,8 @@ pub fn spawn_spawning_body(
         // TODO: Set from Click + Drag
         Vector2D { x: 100., y: 100. },
     );
-    let mesh = create_celestial_body_mesh(
-        body.radius,
-        body.get_surface_colour(),
-        &mut meshes,
-        &mut materials,
-    );
 
-    commands.entity(entity).insert((mesh, body));
+    commands.entity(entity).insert(body);
 }
 
 // Keep following the cursor

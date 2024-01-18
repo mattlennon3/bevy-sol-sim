@@ -16,6 +16,7 @@ use bevy_fly_camera::FlyCameraPlugin;
 use bevy_mod_picking::prelude::EntityEvent;
 use bevy_mod_picking::DefaultPickingPlugins;
 
+use self::assets::mesher_plugin::{self, MesherPlugin};
 use self::kb_mouse::mouse_states::UIMouseState;
 use self::panels::ui_selected_body::{render_active_body_gui, UISelectedBody};
 // use self::bottom_panel::{UIPickedBody};
@@ -37,12 +38,13 @@ impl Plugin for SolGuiPlugin {
             .add_plugins(DefaultPickingPlugins)
             .add_plugins(SpawningPlugin)
             .add_plugins(TrajectoryPlugin)
+            .add_plugins(AssetLoaderPlugin)
+            .add_plugins(MesherPlugin)
             .insert_resource(UISelectedBody::default())
             .insert_resource(UIFollowBody::default())
             .insert_resource(UIPickedBody::default())
             .insert_resource(UIMouseState::default())
             .add_systems(Startup, setup_camera)
-            .add_plugins(AssetLoaderPlugin)
             .add_systems(Startup, setup_gui)
             .add_systems(Update, render_active_body_gui)
             .add_systems(Update, render_bottom_panel_gui)

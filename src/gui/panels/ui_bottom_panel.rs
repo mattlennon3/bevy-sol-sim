@@ -6,7 +6,6 @@ use bevy_egui::{
 use bevy_mod_picking::prelude::*;
 
 use crate::{
-    boundry::create_celestial_body_scene,
     gui::{
         assets::asset_loader::SceneAssets,
         kb_mouse::mouse_states::{LeftClickActionState, UIMouseState},
@@ -43,19 +42,14 @@ pub fn pick_body(
 pub fn render_bottom_panel_gui(
     mut commands: Commands,
     mut picked_body: ResMut<UIPickedBody>,
-    // query: Query<&CelestialBody>,
     spawning_entity: Query<Entity, With<SpawningBody>>,
     mut mouse_state: ResMut<UIMouseState>,
     mut start_spawning: EventWriter<StartSpawningEvent>,
     mut end_spawning: EventWriter<EndSpawningEvent>,
     mut place_state: ResMut<UIPlaceState>,
     mut egui_contexts: EguiContexts,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
     scene_assets: Res<SceneAssets>,
 ) {
-    let asteroid_scene = create_celestial_body_scene(30.0, scene_assets);
-
     let control_spacer_width = 60.0;
 
     egui::Window::new(format!("Bottom Panel"))

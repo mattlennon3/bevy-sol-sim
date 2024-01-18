@@ -10,8 +10,8 @@ use crate::sol::reality_calulator::{calculate_new_positions, default_system, one
 use bevy::prelude::*;
 use boundry::Simulated;
 // use bevy_mod_picking::prelude::*;
-use gui::SolGuiPlugin;
 use gui::panels::ui_time::TimeState;
+use gui::SolGuiPlugin;
 
 fn main() {
     App::new()
@@ -35,15 +35,11 @@ fn main() {
         .run();
 }
 
-fn big_bang(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-) {
+fn big_bang(mut commands: Commands) {
     let system = one_planet_system();
     info!("BANG");
     for body in system.clone() {
-        spawn_body(body, &mut commands, &mut meshes, &mut materials);
+        spawn_body(body, &mut commands);
     }
     info!("Simulated Bodies: {:?}", system.len());
 }
