@@ -11,6 +11,7 @@ use bevy::prelude::*;
 use bevy::window::{WindowRef, WindowResolution};
 use bevy_egui::egui::{self};
 use bevy_egui::{EguiContexts, EguiPlugin};
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_fly_camera::FlyCameraPlugin;
 use bevy_mod_picking::prelude::EntityEvent;
 use bevy_mod_picking::DefaultPickingPlugins;
@@ -23,16 +24,19 @@ use self::camera::ui_camera::{setup_camera, zoom_2d};
 use self::panels::ui_bottom_panel::{render_bottom_panel_gui, UIPickedBody};
 use self::tools::follow_body::{follow_body, UIFollowBody};
 use self::tools::spawning::SpawningPlugin;
+use self::tools::trajectory::TrajectoryPlugin;
 
 pub struct SolGuiPlugin;
 
 impl Plugin for SolGuiPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup_window_size)
-            .add_plugins(EguiPlugin)
+            // .add_plugins(EguiPlugin)
+            .add_plugins(WorldInspectorPlugin::new()) // instead of egui
             .add_plugins(FlyCameraPlugin)
             .add_plugins(DefaultPickingPlugins)
             .add_plugins(SpawningPlugin)
+            .add_plugins(TrajectoryPlugin)
             .insert_resource(UISelectedBody::default())
             .insert_resource(UIFollowBody::default())
             .insert_resource(UIPickedBody::default())

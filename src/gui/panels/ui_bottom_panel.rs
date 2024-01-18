@@ -69,6 +69,16 @@ pub fn render_bottom_panel_gui(
         .title_bar(false)
         .show(egui_contexts.ctx_mut(), |ui| {
             ui.horizontal(|ui| {
+                ui.vertical(|ui| {
+                    ui.horizontal(|ui| {
+                        ui.label("Mode");
+                        if ui.add_enabled(true, egui::Button::new("Orbital")).clicked() {
+                            // set to click and drag
+                        }
+                    });
+                });
+                ui.add_space(control_spacer_width);
+
                 // Asteroids
                 ui.vertical(|ui| {
                     ui.horizontal(|ui| {

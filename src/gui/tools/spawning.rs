@@ -8,8 +8,10 @@ use crate::{
         constants::constants::Z_LEVELS,
         kb_mouse::mouse_states::{LeftClickActionState, UIMouseState},
     },
-    sol::{celestial_body::CelestialBody, celestial_type::CelestialType},
+    sol::{celestial_body::CelestialBody, celestial_type::CelestialType, reality_calulator::{calculate_new_positions, get_object_with_most_mass}},
 };
+
+use super::trajectory::ShowBasicOrbit;
 
 #[derive(Component)]
 pub struct SpawningBody;
@@ -19,6 +21,13 @@ pub struct UIPlaceState {
     // pub body_type: Option<CelestialType>,
     // Populated when the user clicks and drags to spawn a body
     pub vec_start: Option<Vector2D<f32>>,
+    trajectory_mode: TrajectoryPresetType,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum TrajectoryPresetType {
+    Orbital,
+    ClickAndDrag
 }
 
 pub struct SpawningPlugin;
@@ -55,8 +64,8 @@ impl Plugin for SpawningPlugin {
 impl Default for UIPlaceState {
     fn default() -> Self {
         Self {
-            // body_type: None,
             vec_start: None,
+            trajectory_mode: TrajectoryPresetType::Orbital,
         }
     }
 }
@@ -148,6 +157,7 @@ pub fn start_spawn_selection(
             // unwrap event and get body type
             body_type.0,
             SpawningBody,
+            ShowBasicOrbit,
             Transform::default(),
         ));
     }
@@ -217,6 +227,7 @@ pub fn spawn_body(
     }
 }
 
+
 fn render_click_and_drag_line(
     mut mouse_state: ResMut<UIMouseState>,
     mut place_state: ResMut<UIPlaceState>,
@@ -224,6 +235,10 @@ fn render_click_and_drag_line(
     q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     mut gizmos: Gizmos,
 ) {
+    if (place_state.trajectory_mode != TrajectoryPresetType::ClickAndDrag) {
+        return;
+    }
+
     let Some(world_position) = get_world_cursor_position(q_windows, q_camera) else {
         return;
     };

@@ -11,7 +11,11 @@ pub const GRAVITY: f32 = 0.5;
 // pub const TIME_START: f32 = 0.0;
 pub const TIME_DELTA_PER_TICK: f32 = 0.01;
 
-pub fn get_object_with_most_mass(objects: Vec<&CelestialBody>) -> &CelestialBody {
+// pub fn get_trajectory_path(body: &CelestialBody, system: SystemContents) -> Vec<Vector2D<f32>> {
+//     // return body.trail.clone();
+// }
+
+pub fn get_object_with_most_mass(objects: &Vec<CelestialBody>) -> &CelestialBody {
     objects
         .iter()
         .reduce(|acc, body| if acc.mass >= body.mass { acc } else { body })
