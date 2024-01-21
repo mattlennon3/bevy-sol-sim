@@ -1,7 +1,10 @@
 use bevy::prelude::*;
 use bevy_mod_picking::prelude::*;
 
-use crate::{gui::camera::ui_camera::MainCamera, sol::celestial_body::CelestialBody};
+use crate::{
+    gui::camera::ui_camera::MainCamera,
+    sol::celestial_type::CelestialType,
+};
 
 #[derive(Resource, Debug)]
 pub struct UIFollowBody {
@@ -16,7 +19,7 @@ impl Default for UIFollowBody {
 
 pub fn click_body(
     mut active_body: ResMut<UIFollowBody>,
-    query: Query<&CelestialBody>,
+    query: Query<&CelestialType>,
     event: Listener<Pointer<Click>>,
 ) {
     if let Ok(_body) = query.get(event.target) {
@@ -26,19 +29,17 @@ pub fn click_body(
 
 pub fn follow_body(
     mut follow_body: ResMut<UIFollowBody>,
-    query: Query<&CelestialBody>,
+    query: Query<(Entity, &CelestialType, &Transform), Without<MainCamera>>,
     mut camera_transform: Query<&mut Transform, With<MainCamera>>,
     keyboard_input: Res<Input<KeyCode>>,
 ) {
     match follow_body.follow {
         Some(followed) => {
-            if let Ok(body) = query.get(followed) {
+            if let Ok((_, body_type, transform)) = query.get(followed) {
                 // set camera transform to body position
-                camera_transform.get_single_mut().unwrap().translation = Vec3 {
-                    x: body.pos.x,
-                    y: body.pos.y,
-                    z: 0.0,
-                };
+                if let Ok(mut camera_transform) = camera_transform.get_single_mut() {
+                    camera_transform.translation = transform.translation;
+                }
             }
             if keyboard_input.just_pressed(KeyCode::W) {
                 follow_body.follow = None;

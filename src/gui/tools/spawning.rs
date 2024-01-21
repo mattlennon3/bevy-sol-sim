@@ -1,14 +1,16 @@
 use bevy::{prelude::*, window::PrimaryWindow};
-use vector2d::Vector2D;
 
 use crate::{
-    boundry::Simulated,
     gui::{
         camera::ui_camera::MainCamera,
         constants::constants::Z_LEVELS,
         kb_mouse::mouse_states::{LeftClickActionState, UIMouseState},
     },
-    sol::{celestial_body::CelestialBody, celestial_type::CelestialType, reality_calulator::{calculate_new_positions, get_object_with_most_mass}},
+    sol::{
+        celestial_body::{CelestialBodyBundle, Momentum, Name, Position},
+        celestial_type::CelestialType,
+        reality_calculator::Simulated,
+    },
 };
 
 use super::trajectory::ShowBasicOrbit;
@@ -20,14 +22,14 @@ pub struct SpawningBody;
 pub struct UIPlaceState {
     // pub body_type: Option<CelestialType>,
     // Populated when the user clicks and drags to spawn a body
-    pub vec_start: Option<Vector2D<f32>>,
+    pub vec_start: Option<Position>,
     trajectory_mode: TrajectoryPresetType,
 }
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum TrajectoryPresetType {
     Orbital,
-    ClickAndDrag
+    ClickAndDrag,
 }
 
 pub struct SpawningPlugin;
@@ -55,8 +57,7 @@ impl Plugin for SpawningPlugin {
             .add_systems(Update, spawning_body_follow_cursor)
             .add_systems(Update, start_spawn_selection)
             .add_systems(Update, remove_spawn_selection)
-            .add_systems(Update, spawn_body)
-            .add_systems(Update, spawn_spawning_body);
+            .add_systems(Update, spawn_body);
         // .add_systems(Update, render_click_and_drag_line);
     }
 }
@@ -70,24 +71,53 @@ impl Default for UIPlaceState {
     }
 }
 
-// Actually adds the components of the body, so it can be rendered
-pub fn spawn_spawning_body(
+// Begin selection
+pub fn start_spawn_selection(
     mut commands: Commands,
-    mouse_state: Res<UIMouseState>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-    mut query: Query<
-        (&mut Transform, &CelestialType, Entity),
-        (With<SpawningBody>, Without<CelestialBody>),
-    >,
+    mut mouse_state: ResMut<UIMouseState>,
+    mut start_spawning: EventReader<StartSpawningEvent>,
     q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
 ) {
-    // Check main query first
-    if query.is_empty() {
+    // Check last as it involves calculations
+    let Some(world_position) = get_world_cursor_position(q_windows, q_camera) else {
         return;
-    }
+    };
 
+    if let Some(spawn_body_type) = start_spawning.read().last() {
+        info!("Selected for spawn: {:?}", spawn_body_type.0);
+        mouse_state.left = LeftClickActionState::Spawning;
+        // Only spawn this component, then detect later and add the full mesh when we know the cursor position
+
+        let body = CelestialBodyBundle::new(
+            spawn_body_type.0,
+            Position::new(world_position.x, world_position.y),
+            None, // random mass
+        );
+
+        commands.spawn(body).insert((SpawningBody, ShowBasicOrbit));
+    }
+}
+
+// pub fn log_spawning_body(q: Query<(Entity, &CelestialType, &Transform, &Name), With<SpawningBody>>) {
+//     if let Ok(entity) = q.get_single() {
+//         info!("Spawning body: {:?}", entity);
+//     }
+// }
+
+// Remove the SpawningBody component and add the Simulated component
+pub fn spawn_body(
+    mut commands: Commands,
+    mut mouse_state: ResMut<UIMouseState>,
+    mut place_state: ResMut<UIPlaceState>,
+    mouse: Res<Input<MouseButton>>,
+    q_windows: Query<&Window, With<PrimaryWindow>>,
+    q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+    mut q_body: Query<
+        (Entity, &CelestialType, &Transform, &Name),
+        With<SpawningBody>,
+    >,
+) {
     if mouse_state.left != LeftClickActionState::Spawning {
         return;
     }
@@ -97,28 +127,67 @@ pub fn spawn_spawning_body(
         return;
     };
 
-    let (mut transform, body_type, entity) = query.single_mut();
-    transform.translation = Vec3::new(world_position.x, world_position.y, Z_LEVELS.background);
+    // Check for mouse releases
+    if mouse.just_pressed(MouseButton::Left) {
+        place_state.vec_start = Some(Position::new(world_position.x, world_position.y));
+    }
 
-    let body = CelestialBody::new_random(
-        *body_type,
-        // TODO: The transform is awkward here, we should be able to get the position from the transform
-        // We need to update this later on spawn, as we are just following the cursor atm
-        Vector2D {
-            x: world_position.x,
-            y: world_position.y,
-        },
-        // TODO: Set from Click + Drag
-        Vector2D { x: 100., y: 100. },
-    );
-
-    commands.entity(entity).insert(body);
+    if mouse.just_released(MouseButton::Left) {
+        if let Ok((entity, body_type, pos, name)) = q_body.get_single_mut() {
+            // TODO: Need to calculate the orbital velocity based on the distance from the star and mass
+            let Some(vec_start) = place_state.vec_start else {
+                return;
+            };
+            
+            let momentum_multiplier = 5.0;
+            let momentum = Momentum::new(
+                (vec_start.0.x + pos.translation.x) * momentum_multiplier,
+                (vec_start.0.y + pos.translation.y) * momentum_multiplier,
+            );
+            commands.entity(entity).remove::<SpawningBody>();
+            commands.entity(entity).remove::<ShowBasicOrbit>();
+            commands.entity(entity).insert(momentum);
+            commands.entity(entity).insert(Simulated);
+            info!(
+                "Spawned a {:?}, named: {:?}. Pos: {:?}, Momentum: {:?}",
+                body_type, name, pos, momentum.0
+            );
+            mouse_state.left = LeftClickActionState::Selecting;
+            place_state.vec_start = None;
+        }
+    }
 }
+
+fn render_click_and_drag_line(
+    mut mouse_state: ResMut<UIMouseState>,
+    mut place_state: ResMut<UIPlaceState>,
+    q_windows: Query<&Window, With<PrimaryWindow>>,
+    q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+    mut gizmos: Gizmos,
+) {
+    if (place_state.trajectory_mode != TrajectoryPresetType::ClickAndDrag) {
+        return;
+    }
+
+    let Some(world_position) = get_world_cursor_position(q_windows, q_camera) else {
+        return;
+    };
+
+    if let Some(vec_start) = place_state.vec_start {
+        gizmos.line_2d(vec_start.0, world_position, Color::WHITE);
+    }
+}
+
+// fn render_click_and_drag_line(mut cursor_evr: EventReader<CursorMoved>) {
+//     if let Some(position) = cursor_evr.read().last() {
+//         println!("Cursor has moved to {:?}", position);
+//     }
+// }
 
 // Keep following the cursor
 pub fn spawning_body_follow_cursor(
     mouse_state: Res<UIMouseState>,
-    mut q_transform: Query<&mut Transform, (With<SpawningBody>, Without<Simulated>)>,
+    mut q_transform: Query<&mut Transform, With<SpawningBody>>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
     q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
 ) {
@@ -137,26 +206,6 @@ pub fn spawning_body_follow_cursor(
     }
 }
 
-// Begin selection
-pub fn start_spawn_selection(
-    mut commands: Commands,
-    mut mouse_state: ResMut<UIMouseState>,
-    mut start_spawning: EventReader<StartSpawningEvent>,
-) {
-    if let Some(body_type) = start_spawning.read().last() {
-        info!("Selected for spawn: {:?}", body_type.0);
-        mouse_state.left = LeftClickActionState::Spawning;
-        // Only spawn this component, then detect later and add the full mesh when we know the cursor position
-        commands.spawn((
-            // unwrap event and get body type
-            body_type.0,
-            SpawningBody,
-            ShowBasicOrbit,
-            Transform::default(),
-        ));
-    }
-}
-
 // Cancel selection
 pub fn remove_spawn_selection(
     mut commands: Commands,
@@ -172,82 +221,6 @@ pub fn remove_spawn_selection(
         }
     }
 }
-
-// Remove the SpawningBody component and add the Simulated component
-pub fn spawn_body(
-    mut commands: Commands,
-    mut mouse_state: ResMut<UIMouseState>,
-    mut place_state: ResMut<UIPlaceState>,
-    mouse: Res<Input<MouseButton>>,
-    q_windows: Query<&Window, With<PrimaryWindow>>,
-    q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
-    mut q_body: Query<(Entity, &mut CelestialBody), With<SpawningBody>>,
-) {
-    if mouse_state.left != LeftClickActionState::Spawning {
-        return;
-    }
-
-    // Check last as it involves calculations
-    let Some(world_position) = get_world_cursor_position(q_windows, q_camera) else {
-        return;
-    };
-
-    // Check for mouse releases
-    if mouse.just_pressed(MouseButton::Left) {
-        place_state.vec_start = Some(Vector2D {
-            x: world_position.x,
-            y: world_position.y,
-        });
-    }
-
-    if mouse.just_released(MouseButton::Left) {
-        if let Ok((entity, mut body)) = q_body.get_single_mut() {
-            let Some(vec_start) = place_state.vec_start else {
-                return;
-            };
-            // Update position of body, as it is set within the CelestialBody struct
-            let momentum_multiplier = 5.0;
-            body.momentum = Vector2D { x: (vec_start.x + body.pos.x) * momentum_multiplier, y: (vec_start.y + body.pos.y) * momentum_multiplier};
-            body.pos = Vector2D {
-                x: world_position.x,
-                y: world_position.y,
-            };
-            commands.entity(entity).remove::<SpawningBody>();
-            commands.entity(entity).insert(Simulated);
-            info!("Spawned a {:?}, named: {:?}. Pos: {:?}, Momentum: {:?}", body.body_type, body.name, body.pos, body.momentum);
-            mouse_state.left = LeftClickActionState::Selecting;
-            place_state.vec_start = None;
-        }
-    }
-}
-
-
-fn render_click_and_drag_line(
-    mut mouse_state: ResMut<UIMouseState>,
-    mut place_state: ResMut<UIPlaceState>,
-    q_windows: Query<&Window, With<PrimaryWindow>>,
-    q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
-    mut gizmos: Gizmos,
-) {
-    if (place_state.trajectory_mode != TrajectoryPresetType::ClickAndDrag) {
-        return;
-    }
-
-    let Some(world_position) = get_world_cursor_position(q_windows, q_camera) else {
-        return;
-    };
-
-    if let Some(vec_start) = place_state.vec_start {
-        let bevy_vec2 = bevy::prelude::Vec2::new(vec_start.x, vec_start.y);
-        gizmos.line_2d(bevy_vec2, world_position, Color::WHITE);
-    }
-}
-
-// fn render_click_and_drag_line(mut cursor_evr: EventReader<CursorMoved>) {
-//     if let Some(position) = cursor_evr.read().last() {
-//         println!("Cursor has moved to {:?}", position);
-//     }
-// }
 
 // pub fn spawn_selected_body_type(
 //     place_state: ResMut<UIPlaceState>,

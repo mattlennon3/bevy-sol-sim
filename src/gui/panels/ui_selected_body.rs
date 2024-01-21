@@ -1,8 +1,14 @@
 use bevy::prelude::*;
+use bevy_egui::{
+    egui::{self, Align2, Vec2},
+    EguiContexts,
+};
 use bevy_mod_picking::prelude::*;
-use bevy_egui::{egui::{self, Align2, Vec2}, EguiContexts};
 
-use crate::sol::celestial_body::CelestialBody;
+use crate::sol::{
+    celestial_body::{celestial_body::speed, Mass, Momentum, Radius},
+    celestial_type::CelestialType,
+};
 
 #[derive(Resource)]
 pub struct UISelectedBody {
@@ -17,7 +23,7 @@ impl Default for UISelectedBody {
 
 pub fn describe_body(
     mut active_body: ResMut<UISelectedBody>,
-    query: Query<&CelestialBody>,
+    query: Query<&CelestialType>,
     event: Listener<Pointer<Over>>,
 ) {
     if let Ok(_body) = query.get(event.target) {
@@ -26,43 +32,47 @@ pub fn describe_body(
 }
 
 pub fn render_active_body_gui(
-  active_body: Res<UISelectedBody>,
-  query: Query<&CelestialBody>,
-  mut egui_contexts: EguiContexts,
+    active_body: Res<UISelectedBody>,
+    query: Query<(&CelestialType, &Transform, &Mass, &Name, &Radius, &Momentum)>,
+    mut egui_contexts: EguiContexts,
 ) {
-  match active_body.selected {
-      Some(selected) => {
-          if let Ok(body) = query.get(selected) {
-              egui::Window::new(format!("Info: {:?}", body.name))
-              // .scroll2([false, true])
-              // .vscroll(true)
-              .fixed_size(Vec2 { x: 100.0, y: 100.0 })
-              // .default_width(400.0)
-              .resizable(false)
-              .anchor(Align2::RIGHT_TOP, Vec2 { x: -10.0, y: 50.0 })
-              .show(egui_contexts.ctx_mut(), |ui| {
-                  ui.horizontal(|ui| {
-                      ui.label(format!("Type: {:?}", body.body_type));
-                  });
-                  ui.horizontal(|ui| {
-                      ui.label(format!("Name: {:?}", body.name));
-                  });
-                  ui.horizontal(|ui| {
-                      ui.label(format!("Mass: {:?}", body.mass));
-                  });
-                  ui.horizontal(|ui| {
-                      ui.label(format!("Radius: {:.4}", body.radius));
-                  });
-                  ui.horizontal(|ui| {
-                      // TODO: What is this unit?
-                      ui.label(format!("Speed: {:.4} mps", body.speed()));
-                  });
-                  ui.horizontal(|ui| {
-                      ui.label(format!("Pos: x:{:.4}, y:{:.4}", body.pos.x, body.pos.y));
-                  });
-              });
-          }
-      }
-      None => (),
-  };
+    match active_body.selected {
+        Some(selected) => {
+            if let Ok((body_type, transform, mass, name, radius, momentum)) = query.get(selected) {
+                egui::Window::new(format!("Info: {:?}", name))
+                    // .scroll2([false, true])
+                    // .vscroll(true)
+                    .fixed_size(Vec2 { x: 100.0, y: 100.0 })
+                    // .default_width(400.0)
+                    .resizable(false)
+                    .anchor(Align2::RIGHT_TOP, Vec2 { x: -10.0, y: 50.0 })
+                    .show(egui_contexts.ctx_mut(), |ui| {
+                        let pos = transform.translation;
+                        ui.horizontal(|ui| {
+                            ui.label(format!("Type: {:?}", body_type));
+                        });
+                        ui.horizontal(|ui| {
+                            ui.label(format!("Name: {:?}", name));
+                        });
+                        ui.horizontal(|ui| {
+                            ui.label(format!("Mass: {:?}", mass));
+                        });
+                        ui.horizontal(|ui| {
+                            ui.label(format!("Radius: {:.4}", radius.0));
+                        });
+                        ui.horizontal(|ui| {
+                            // TODO: What is this unit?
+                            ui.label(format!("Speed: {:.4} mps", speed(momentum, mass)));
+                        });
+                        ui.horizontal(|ui| {
+                            ui.label(format!("Pos: x:{:.4}, y:{:.4}", pos.x, pos.y));
+                        });
+                        ui.horizontal(|ui| {
+                            ui.label(format!("Momentum: x:{:.4}, y:{:.4}", momentum.0.x, momentum.0.y));
+                        });
+                    });
+            }
+        }
+        None => (),
+    };
 }

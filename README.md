@@ -51,6 +51,11 @@ Toggle between 2d and 3d? or just rewrite in 3d...
 
 ### Dev history / coming back from a break
 
+Something to keep in mind during development
+> I look at it this way: if your system's purpose is to call a method on a component, then the system IS the method. This was something I had to get used to when transitioning from OOP to ECS.
+> https://redd.it/16lcs6o
+
+
 Create a single object system for easier testing. Test/implement the radius calculation from mass, density etc
 Then make the camera auto zoom work for one body, then two
 you could even do the orbit calculations with this setup

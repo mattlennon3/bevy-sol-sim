@@ -3,6 +3,7 @@ pub mod camera;
 pub mod constants;
 pub mod kb_mouse;
 pub mod panels;
+pub mod sol_gui;
 pub mod tools;
 
 use bevy::prelude::*;

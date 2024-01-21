@@ -10,8 +10,7 @@ use crate::{
         assets::asset_loader::SceneAssets,
         kb_mouse::mouse_states::{LeftClickActionState, UIMouseState},
         tools::spawning::{EndSpawningEvent, SpawningBody, StartSpawningEvent, UIPlaceState},
-    },
-    sol::{celestial_body::CelestialBody, celestial_type::CelestialType},
+    }, sol::celestial_type::CelestialType,
 };
 
 pub trait InSimuation {
@@ -31,7 +30,7 @@ impl Default for UIPickedBody {
 
 pub fn pick_body(
     mut picked_body: ResMut<UIPickedBody>,
-    query: Query<&CelestialBody>,
+    query: Query<&CelestialType>,
     event: Listener<Pointer<Over>>,
 ) {
     if let Ok(_body) = query.get(event.target) {

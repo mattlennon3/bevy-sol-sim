@@ -3,7 +3,7 @@ use bevy::{
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
 
-use crate::{sol::celestial_body::CelestialBody};
+use crate::sol::{celestial_body::{celestial_body::get_surface_colour, Radius}, celestial_type::CelestialType};
 
 use super::asset_loader::SceneAssets;
 
@@ -17,7 +17,7 @@ impl Plugin for MesherPlugin {
 
 /** Add texture to each celestial body */
 fn celestial_body_mesher(
-    b_query: Query<(Entity, &CelestialBody), Without<Mesh2dHandle>>,
+    b_query: Query<(Entity, &CelestialType, &Radius, &Transform), Without<Mesh2dHandle>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut commands: Commands,
@@ -25,10 +25,12 @@ fn celestial_body_mesher(
     if b_query.is_empty() {
         return;
     }
-    for (entity, body) in b_query.iter() {
+    println!("Adding meshes to bodies");
+    for (entity, body_type, radius, transform) in b_query.iter() {
         let mesh = create_celestial_body_mesh(
-            body.radius,
-            body.get_surface_colour(),
+            radius,
+            get_surface_colour(body_type),
+            &transform,
             &mut meshes,
             &mut materials,
         );
@@ -37,27 +39,27 @@ fn celestial_body_mesher(
 }
 
 pub fn create_celestial_body_mesh(
-    radius: f32,
+    radius: &Radius,
     colour: Color,
+    transform: &Transform,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<ColorMaterial>>,
 ) -> MaterialMesh2dBundle<ColorMaterial> {
-    // let transform = Transform::from_translation(Vec3::new(body.pos.x, body.pos.y, 0.));
 
     MaterialMesh2dBundle {
-        mesh: meshes.add(shape::Circle::new(radius).into()).into(),
+        mesh: meshes.add(shape::Circle::new(radius.0).into()).into(),
         material: materials.add(ColorMaterial::from(colour)),
-        // transform,
+        transform: *transform,
         ..default()
     }
 }
 
-pub fn create_celestial_body_scene(radius: f32, scene_assets: Res<SceneAssets>) -> SceneBundle {
-    // let transform = Transform::from_translation(Vec3::new(body.pos.x, body.pos.y, 0.));
+// pub fn create_celestial_body_scene(radius: f32, scene_assets: Res<SceneAssets>) -> SceneBundle {
+//     // let transform = Transform::from_translation(Vec3::new(body.pos.x, body.pos.y, 0.));
 
-    SceneBundle {
-        scene: scene_assets.star.clone(),
-        // transform: Transform::from_translation(translation),
-        ..default()
-    }
-}
+//     SceneBundle {
+//         scene: scene_assets.star.clone(),
+//         // transform: Transform::from_translation(translation),
+//         ..default()
+//     }
+// }
