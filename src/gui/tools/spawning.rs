@@ -1,15 +1,13 @@
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::{prelude::*, transform, window::PrimaryWindow};
 
 use crate::{
     gui::{
-        camera::ui_camera::MainCamera,
-        constants::constants::Z_LEVELS,
-        kb_mouse::mouse_states::{LeftClickActionState, UIMouseState},
+        camera::ui_camera::MainCamera, constants::constants::Z_LEVELS, kb_mouse::mouse_states::{LeftClickActionState, UIMouseState}, sol_gui::celestial_body_gui::CelestialBodyGuiBundle
     },
     sol::{
-        celestial_body::{CelestialBodyBundle, Momentum, Name, Position},
+        celestial_body::{celestial_body::calculate_orbital_momentum, BodyName, CelestialBodyBundle, Mass, Momentum, Position},
         celestial_type::CelestialType,
-        reality_calculator::Simulated,
+        reality_calculator::{MostMass, Simulated},
     },
 };
 
@@ -22,7 +20,7 @@ pub struct SpawningBody;
 pub struct UIPlaceState {
     // pub body_type: Option<CelestialType>,
     // Populated when the user clicks and drags to spawn a body
-    pub vec_start: Option<Position>,
+    pub click_drag_vec_start: Option<Position>,
     trajectory_mode: TrajectoryPresetType,
 }
 
@@ -65,7 +63,7 @@ impl Plugin for SpawningPlugin {
 impl Default for UIPlaceState {
     fn default() -> Self {
         Self {
-            vec_start: None,
+            click_drag_vec_start: None,
             trajectory_mode: TrajectoryPresetType::Orbital,
         }
     }
@@ -113,8 +111,9 @@ pub fn spawn_body(
     mouse: Res<Input<MouseButton>>,
     q_windows: Query<&Window, With<PrimaryWindow>>,
     q_camera: Query<(&Camera, &GlobalTransform), With<MainCamera>>,
+    q_most_mass: Query<(&Transform, &Mass, &Momentum), With<MostMass>>,
     mut q_body: Query<
-        (Entity, &CelestialType, &Transform, &Name),
+        (Entity, &CelestialType, &Transform, &BodyName, &Mass),
         With<SpawningBody>,
     >,
 ) {
@@ -129,31 +128,36 @@ pub fn spawn_body(
 
     // Check for mouse releases
     if mouse.just_pressed(MouseButton::Left) {
-        place_state.vec_start = Some(Position::new(world_position.x, world_position.y));
+        place_state.click_drag_vec_start = Some(Position::new(world_position.x, world_position.y));
     }
 
     if mouse.just_released(MouseButton::Left) {
-        if let Ok((entity, body_type, pos, name)) = q_body.get_single_mut() {
+        if let Ok((entity, body_type, pos, name, mass)) = q_body.get_single_mut() {
             // TODO: Need to calculate the orbital velocity based on the distance from the star and mass
-            let Some(vec_start) = place_state.vec_start else {
+            let Some(vec_start) = place_state.click_drag_vec_start else {
+                return;
+            };
+            let Ok(most_mass) = q_most_mass.get_single() else {
                 return;
             };
             
-            let momentum_multiplier = 5.0;
-            let momentum = Momentum::new(
-                (vec_start.0.x + pos.translation.x) * momentum_multiplier,
-                (vec_start.0.y + pos.translation.y) * momentum_multiplier,
-            );
+            // let momentum_multiplier = 5.0;
+            // let momentum = Momentum::new(
+            //     (vec_start.0.x + pos.translation.x) * momentum_multiplier,
+            //     (vec_start.0.y + pos.translation.y) * momentum_multiplier,
+            // );
+            let momentum = calculate_orbital_momentum(most_mass.into(), (Position(world_position), mass), false);
             commands.entity(entity).remove::<SpawningBody>();
             commands.entity(entity).remove::<ShowBasicOrbit>();
             commands.entity(entity).insert(momentum);
-            commands.entity(entity).insert(Simulated);
+            commands.entity(entity).insert(Simulated); 
+            commands.entity(entity).insert(CelestialBodyGuiBundle::new());
             info!(
                 "Spawned a {:?}, named: {:?}. Pos: {:?}, Momentum: {:?}",
                 body_type, name, pos, momentum.0
             );
             mouse_state.left = LeftClickActionState::Selecting;
-            place_state.vec_start = None;
+            place_state.click_drag_vec_start = None;
         }
     }
 }
@@ -173,7 +177,7 @@ fn render_click_and_drag_line(
         return;
     };
 
-    if let Some(vec_start) = place_state.vec_start {
+    if let Some(vec_start) = place_state.click_drag_vec_start {
         gizmos.line_2d(vec_start.0, world_position, Color::WHITE);
     }
 }

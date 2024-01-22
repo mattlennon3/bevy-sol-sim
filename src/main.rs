@@ -4,7 +4,7 @@ mod sol;
 use crate::gui::panels::ui_time::GameTimePlugin;
 use crate::gui::sol_gui::celestial_body_gui::CelestialBodyGuiBundle;
 use crate::sol::reality_calculator::Simulated;
-use crate::sol::systems::{one_planet_system, sol_system};
+use crate::sol::systems::{one_planet_system, sol_system, twin_planet_system};
 
 use bevy::prelude::*;
 use gui::SolGuiPlugin;
@@ -34,7 +34,7 @@ fn main() {
 
 // Move to systems.rs?
 fn big_bang(mut commands: Commands) {
-    let system = one_planet_system();
+    let system = twin_planet_system();
     info!("BANG");
     for (body_bundle, momentum) in system.clone() {
         // info!("Spawning {:?}", &body_bundle);

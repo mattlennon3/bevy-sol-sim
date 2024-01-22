@@ -25,7 +25,6 @@ fn celestial_body_mesher(
     if b_query.is_empty() {
         return;
     }
-    println!("Adding meshes to bodies");
     for (entity, body_type, radius, transform) in b_query.iter() {
         let mesh = create_celestial_body_mesh(
             radius,

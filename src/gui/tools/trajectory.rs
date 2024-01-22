@@ -3,10 +3,10 @@ use std::f32::consts::PI;
 use bevy::{prelude::*, transform};
 
 use crate::sol::{
-    celestial_body::{Mass, Position},
+    celestial_body::{Mass, Momentum, Position},
     celestial_type::CelestialType,
-    reality_calculator::Simulated,
-    utils::{get_distance, get_object_with_most_mass},
+    reality_calculator::{MostMass, Simulated},
+    utils::get_distance,
 };
 
 pub struct TrajectoryPlugin;
@@ -50,6 +50,7 @@ struct TrajectoryProps {
 fn draw_perfect_orbit(
     q_all: Query<(&CelestialType, &Mass, &Transform), With<Simulated>>,
     q_target: Query<&Transform, With<ShowBasicOrbit>>,
+    q_most_mass: Query<(&Transform, &Mass, &Momentum), With<MostMass>>,
     mut gizmos: Gizmos,
 ) {
     let transforms = q_target.iter().collect::<Vec<_>>();
@@ -66,6 +67,7 @@ fn draw_perfect_orbit(
     if bodies.is_empty() {
         return;
     }
+    // TODO: Change for q_most_mass
     let most_mass_body = bodies.iter().max_by(|a, b| a.mass.partial_cmp(&b.mass).unwrap()).unwrap();
 
     for transform in &transforms {

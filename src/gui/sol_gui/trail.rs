@@ -19,12 +19,12 @@ impl Trail {
         self.0.clear();
     }
 
-    pub fn draw(&self, ctx: &mut Context, color: Color) -> GameResult<()> {
-        let mut mesh = MeshBuilder::new();
-        for pos in &self.0 {
-            mesh.circle(DrawMode::fill(), pos, 1.0, 0.1, color)?;
-        }
-        let mesh = mesh.build(ctx)?;
-        graphics::draw(ctx, &mesh, DrawParam::default())
-    }
+    // pub fn draw(&self, ctx: &mut Context, color: Color) -> GameResult<()> {
+    //     let mut mesh = MeshBuilder::new();
+    //     for pos in &self.0 {
+    //         mesh.circle(DrawMode::fill(), pos, 1.0, 0.1, color)?;
+    //     }
+    //     let mesh = mesh.build(ctx)?;
+    //     graphics::draw(ctx, &mesh, DrawParam::default())
+    // }
 }

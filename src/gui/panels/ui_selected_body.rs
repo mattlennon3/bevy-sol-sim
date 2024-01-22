@@ -6,7 +6,7 @@ use bevy_egui::{
 use bevy_mod_picking::prelude::*;
 
 use crate::sol::{
-    celestial_body::{celestial_body::speed, Mass, Momentum, Radius},
+    celestial_body::{celestial_body::speed, Mass, Momentum, BodyName, Radius},
     celestial_type::CelestialType,
 };
 
@@ -33,7 +33,7 @@ pub fn describe_body(
 
 pub fn render_active_body_gui(
     active_body: Res<UISelectedBody>,
-    query: Query<(&CelestialType, &Transform, &Mass, &Name, &Radius, &Momentum)>,
+    query: Query<(&CelestialType, &Transform, &Mass, &BodyName, &Radius, &Momentum)>,
     mut egui_contexts: EguiContexts,
 ) {
     match active_body.selected {

@@ -11,7 +11,7 @@ use crate::{
 use super::{celestial_type::CelestialType, reality_calculator::GRAVITY};
 
 #[derive(Component, Clone, Eq, PartialEq, Debug)]
-pub struct Name(String);
+pub struct BodyName(String); // "Name" used by bevy
 #[derive(Component, Clone, PartialEq)]
 pub struct Radius(pub f32);
 
@@ -32,7 +32,7 @@ pub struct CelestialBodyBundle {
     pub body_type: CelestialType,
     pub transform: Transform,
     pub global_transform: GlobalTransform,
-    pub name: Name,
+    pub name: BodyName,
     pub radius: Radius,
     pub mass: Mass,
     // Not sure if momentum should be in the initial bundle
@@ -98,7 +98,7 @@ impl From<Transform> for Position {
 
 // impl From<Position> for Transform {
 //     fn from_(position: Position, z_level: Option<f32>) -> Self {
-//         Transform {  
+//         Transform {
 //             translation: Vec3 { x: position.0.x, y: position.0.y}
 //             ..Default::default()
 //         }
@@ -114,7 +114,7 @@ impl From<Position> for Vec2 {
 
 impl CelestialBodyBundle {
     pub fn new(body_type: CelestialType, position: Position, mass: Option<Mass>) -> Self {
-        let name = Name(celestial_body::get_default_name_for_body(body_type));
+        let name = BodyName(celestial_body::get_default_name_for_body(body_type));
         let mass = match mass {
             Some(mass) => mass,
             None => celestial_body::random_mass(body_type),
@@ -197,6 +197,18 @@ pub mod celestial_body {
     pub struct ForceVectorData {
         pub pos: Position,
         pub mass: Mass,
+        pub momentum: Momentum,
+    }
+
+    impl From<(&Transform, &Mass, &Momentum)> for ForceVectorData {
+        fn from((transform, mass, momentum): (&Transform, &Mass, &Momentum)) -> Self {
+            let pos = Position::new_from_transform(&transform);
+            Self {
+                pos,
+                mass: *mass,
+                momentum: *momentum,
+            }
+        }
     }
 
     pub fn get_force_vector(first: &ForceVectorData, second: &ForceVectorData) -> Vec2 {
@@ -205,11 +217,11 @@ pub mod celestial_body {
         // I had to guess the force_vector code but amazingly it worked first time
         let distance_vec = first.pos - second.pos;
         let magnitude = distance_vec.0.length();
-        
+
         let unit_vector = distance_vec.0 / magnitude;
-        
+
         let force_magnitude = (GRAVITY * first.mass.0 * second.mass.0 / magnitude).powf(2.0);
-        
+
         // KEEP THIS DEBUG BLOCK - helpful for when two things have the same position and it makes the magnitude infinite
         if magnitude.eq(&0.0) || force_magnitude.is_infinite() {
             dbg!(first, second, magnitude, force_magnitude);
@@ -223,6 +235,30 @@ pub mod celestial_body {
         };
 
         return force_vector;
+    }
+
+    pub fn calculate_orbital_momentum(
+        body_a: ForceVectorData,
+        body_b: (Position, &Mass),
+        clockwise: bool,
+    ) -> Momentum {
+        let distance = (body_b.0 - body_a.pos).0.length();
+        let velocity_magnitude = (GRAVITY * body_a.mass.0 / distance).sqrt();
+
+        let perpendicular_r = if clockwise {
+            // dbg!(body_a.pos, body_b.0, r.0);
+            Vec2::new(velocity_magnitude * body_b.0.0.y / distance, -velocity_magnitude * body_b.0.0.x / distance)
+        } else {
+            Vec2::new(-velocity_magnitude * body_b.0.0.y / distance, velocity_magnitude * body_b.0.0.x / distance)
+        };
+
+        let m_x = body_b.1.0 * perpendicular_r.x;
+        let m_y = body_b.1.0 * perpendicular_r.y;
+
+        let momentum = Momentum(Vec2::new(m_x, m_y) * 100.0); // TODO: This is a hack to make the planets orbit faster
+
+        dbg!(&momentum);
+        momentum
     }
 
     pub fn get_default_radius(body_type: CelestialType, mass: Mass) -> Radius {

@@ -22,11 +22,30 @@ pub fn one_planet_system() -> SystemContents {
     // let star_bundle = CelestialBodyBundle::new(star, Position::new(0.0, 0.0 ));
     let star_momentum = Momentum(Vec2::ZERO);
 
-    let planet = CelestialBodyBundle::new_planet(Position::new(850.0, 0.0), Some(Mass(30.0)));
+    let planet = CelestialBodyBundle::new_planet(Position::new(450.0, 0.0), Some(Mass(30.0)));
     // let planet_bundle = CelestialBodyBundle::new(planet, Position::new(850.0, 0.0));
-    let planet_momentum = Momentum(Vec2::new(0.0, 1330.0));
+    let planet_momentum = Momentum(Vec2::new(0.0, 7530.0));
 
     let objects = vec![(star, star_momentum), (planet, planet_momentum)];
+    return objects;
+}
+
+pub fn twin_planet_system() -> SystemContents {
+    let star_mass: Mass = Mass(2.0 * 1000.0);
+
+    let star = CelestialBodyBundle::new_star(Position::new(0.0, 0.0), Some(star_mass));
+    // let star_bundle = CelestialBodyBundle::new(star, Position::new(0.0, 0.0 ));
+    let star_momentum = Momentum(Vec2::ZERO);
+
+    let planet = CelestialBodyBundle::new_planet(Position::new(450.0, 0.0), Some(Mass(30.0)));
+    // let planet_bundle = CelestialBodyBundle::new(planet, Position::new(850.0, 0.0));
+    let planet_momentum = Momentum(Vec2::new(0.0, 7530.0));
+
+    let planet2 = CelestialBodyBundle::new_planet(Position::new(-450.0, 0.0), Some(Mass(30.0)));
+    // let planet_bundle = CelestialBodyBundle::new(planet, Position::new(850.0, 0.0));
+    let planet2_momentum = Momentum(Vec2::new(0.0, -7530.0));
+
+    let objects = vec![(star, star_momentum), (planet, planet_momentum), (planet2, planet2_momentum)];
     return objects;
 }
 
