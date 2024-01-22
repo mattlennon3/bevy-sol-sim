@@ -63,15 +63,17 @@ pub struct StepForwardEvent;
 #[derive(Event)]
 pub struct StepBackwardEvent;
 
-fn update_positions(
-    mut query: Query<(Entity, &mut Transform, &mut Momentum, &mut Mass), With<Simulated>>,
+pub type FlowDeltaTime = f32;
+pub struct TimeError;
+
+pub fn use_sim_time_flow(
+    // Virtual time, helps with slomo and paused
+    mut time: ResMut<Time<Virtual>>, 
     // Sim time, as if I needed a 3rd time dimension
     mut sim_time: ResMut<SimTime>,
     mut step_forward: EventReader<StepForwardEvent>,
     mut step_backward: EventReader<StepBackwardEvent>,
-    // Virtual time, helps with slomo and paused
-    mut time: ResMut<Time<Virtual>>, // TODO maybe change to virtual
-) {
+) -> Result<FlowDeltaTime, TimeError> {
     let mut flow: f32 = 1.0;
 
     if time.is_paused() {
@@ -89,7 +91,7 @@ fn update_positions(
             step_backward.clear();
             if sim_time.sim_time <= 0.0 {
                 info!("Can't step backward, already at 0");
-                return;
+                return Err(TimeError);
             }
             // info!("Step backward");
             sim_time.sim_time -= step as f64;
@@ -97,7 +99,7 @@ fn update_positions(
             time.advance_by(Duration::from_secs_f32(step));
         } else {
             // else no path forward, return
-            return;
+            return Err(TimeError);
         }
     } else {
         // else check if we're running ahead of the min time delta tick
@@ -108,7 +110,7 @@ fn update_positions(
            As the delta seconds will never get high enough
         */
         if time.delta_seconds() < TIME_DELTA_PER_TICK {
-            return;
+            return Err(TimeError);
         } else {
             // Happy path, increment time
             sim_time.sim_time += time.delta_seconds_f64();
@@ -120,6 +122,20 @@ fn update_positions(
     // UPDATE: I was wrong, all equations should use `flow_delta_time`
     let real_delta_time = time.delta_seconds();
     let flow_delta_time = real_delta_time * flow;
+
+    Ok(flow_delta_time)
+}
+
+fn update_positions(
+    mut query: Query<(Entity, &mut Transform, &mut Momentum, &mut Mass), With<Simulated>>,
+    sim_time: ResMut<SimTime>,
+    step_forward: EventReader<StepForwardEvent>,
+    step_backward: EventReader<StepBackwardEvent>,
+    time: ResMut<Time<Virtual>>,
+) {
+    let Ok(flow_delta_time) = use_sim_time_flow(time, sim_time, step_forward, step_backward) else {
+        return;
+    };
 
     // Make a copy of the current state of the query
     let bodies: Vec<(Entity, Transform, Momentum, Mass)> = query
