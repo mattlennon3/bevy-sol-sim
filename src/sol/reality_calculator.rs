@@ -1,6 +1,6 @@
-use bevy::{prelude::*, transform::commands};
+use std::time::Duration;
 
-use crate::gui::panels::ui_time::TimeState;
+use bevy::{prelude::*, time::common_conditions::on_real_timer, transform::commands};
 
 use super::{
     celestial_body::{
@@ -12,12 +12,7 @@ use super::{
 
 // Change to 6.67e-11 for real world
 pub const GRAVITY: f32 = 0.5;
-// pub const TIME_START: f32 = 0.0;
 pub const TIME_DELTA_PER_TICK: f32 = 0.005;
-
-// pub fn get_trajectory_path(body: &CelestialBody, system: SystemContents) -> Vec<Vec2<f32>> {
-//     // return body.trail.clone();
-// }
 
 #[derive(Component)]
 pub struct Simulated;
@@ -29,10 +24,20 @@ pub struct RealityCalculatorPlugin;
 
 impl Plugin for RealityCalculatorPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(PreUpdate, set_most_massive)
+        app.insert_resource(SimTime::default())
+            .add_event::<StepForwardEvent>()
+            .add_event::<StepBackwardEvent>()
+            .add_systems(Startup, setup_time)
+            .add_systems(PreUpdate, set_most_massive)
             .add_systems(Update, update_positions);
     }
 }
+
+pub fn setup_time(mut time: ResMut<Time<Virtual>>) {
+    time.set_relative_speed(1.0);
+}
+
+// pub fn update_simulated_time_text()
 
 #[derive(Clone, Debug)]
 pub struct PositionParams {
@@ -42,9 +47,80 @@ pub struct PositionParams {
     pub mass: Mass,
 }
 
+#[derive(Resource)]
+pub struct SimTime {
+    sim_time: f64,
+}
+
+impl Default for SimTime {
+    fn default() -> Self {
+        Self { sim_time: 0.0 }
+    }
+}
+
+#[derive(Event)]
+pub struct StepForwardEvent;
+#[derive(Event)]
+pub struct StepBackwardEvent;
+
 fn update_positions(
     mut query: Query<(Entity, &mut Transform, &mut Momentum, &mut Mass), With<Simulated>>,
+    // Sim time, as if I needed a 3rd time dimension
+    mut sim_time: ResMut<SimTime>,
+    mut step_forward: EventReader<StepForwardEvent>,
+    mut step_backward: EventReader<StepBackwardEvent>,
+    // Virtual time, helps with slomo and paused
+    mut time: ResMut<Time<Virtual>>, // TODO maybe change to virtual
 ) {
+    let mut flow: f32 = 1.0;
+
+    if time.is_paused() {
+        let step = TIME_DELTA_PER_TICK;
+        if !step_forward.is_empty() {
+            // if step forward event, set flow to 1, proceed
+            step_forward.clear();
+            // info!("Step forward");
+            sim_time.sim_time += step as f64;
+            flow = 1.0;
+            
+            time.advance_by(Duration::from_secs_f32(step));
+        } else if !step_backward.is_empty() {
+            // if step backward event, set flow to -1, proceed
+            step_backward.clear();
+            if sim_time.sim_time <= 0.0 {
+                info!("Can't step backward, already at 0");
+                return;
+            }
+            // info!("Step backward");
+            sim_time.sim_time -= step as f64;
+            flow = -1.0;
+            time.advance_by(Duration::from_secs_f32(step));
+        } else {
+            // else no path forward, return
+            return;
+        }
+    } else {
+        // else check if we're running ahead of the min time delta tick
+
+        /*
+           Somewhat necessary, but perhaps scale down TIME_DELTA_PER_TICK if the
+           time relative_speed gets lower than this constant.
+           As the delta seconds will never get high enough
+        */
+        if time.delta_seconds() < TIME_DELTA_PER_TICK {
+            return;
+        } else {
+            // Happy path, increment time
+            sim_time.sim_time += time.delta_seconds_f64();
+        }
+    }
+
+    // INFO: I think it's right to use both these. As otherwise it
+    // is a double negative at the end of this function (calculating mass, then the x,y)
+    // UPDATE: I was wrong, all equations should use `flow_delta_time`
+    let real_delta_time = time.delta_seconds();
+    let flow_delta_time = real_delta_time * flow;
+
     // Make a copy of the current state of the query
     let bodies: Vec<(Entity, Transform, Momentum, Mass)> = query
         .iter()
@@ -78,14 +154,13 @@ fn update_positions(
             .iter()
             .fold(Vec2 { x: 0.0, y: 0.0 }, |acc, x| acc + *x);
 
-        momentum.0 = momentum.0 + cumulitive_forces * TIME_DELTA_PER_TICK;
+        momentum.0 = momentum.0 + cumulitive_forces * flow_delta_time;
         let translation = transform.translation;
         transform.update_position(Position(Vec2::new(
-            translation.x + momentum.0.x / mass.0 * TIME_DELTA_PER_TICK,
-            translation.y + momentum.0.y / mass.0 * TIME_DELTA_PER_TICK,
+            translation.x + momentum.0.x / mass.0 * flow_delta_time,
+            translation.y + momentum.0.y / mass.0 * flow_delta_time,
         )));
     }
-
     // if (bodies.len() == 4) {
     //     dbg!(bodies);
     //     panic!("bodies");

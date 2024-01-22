@@ -6,14 +6,17 @@ pub mod panels;
 pub mod sol_gui;
 pub mod tools;
 
+use std::time::Duration;
+
 use bevy::prelude::*;
 // use bevy_mod_picking::prelude::*;
 
+use bevy::time::common_conditions::on_real_timer;
 use bevy::window::{WindowRef, WindowResolution};
 use bevy_egui::egui::{self};
 use bevy_egui::{EguiContexts, EguiPlugin};
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_fly_camera::FlyCameraPlugin;
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_mod_picking::prelude::EntityEvent;
 use bevy_mod_picking::DefaultPickingPlugins;
 
@@ -47,8 +50,11 @@ impl Plugin for SolGuiPlugin {
             .insert_resource(UIMouseState::default())
             .add_systems(Startup, setup_camera)
             .add_systems(Startup, setup_gui)
-            .add_systems(Update, render_active_body_gui)
-            .add_systems(Update, render_bottom_panel_gui)
+            .add_systems(
+                Update,
+                (render_active_body_gui, render_bottom_panel_gui)
+                    // .run_if(on_real_timer(Duration::from_millis(100))),
+            )
             .add_systems(Update, zoom_2d)
             .add_systems(Update, follow_body);
     }

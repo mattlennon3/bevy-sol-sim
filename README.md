@@ -78,3 +78,32 @@ tldr; add click events back to the entities
 
 I do need to properly investigate the rapier engine
 
+## TIME
+Thankyou to this guide 🙏🙏🙏
+https://github.com/bevyengine/bevy/pull/10204/files
+
+### Rough guide as-is
+
+Alright, so we have 3 time dimensions here:
+
+- Real time - that's real to use (tracked by bevy)
+- Virtual time - a "scaled" time, also controlled by bevy. Which the excellent guide above describes. Allows slomo and pause. But does not go backwards
+- SimTime - This is my time. Allows going backwards and can allow spawn events to be timestamped
+
+Within `update_positions`, I use a `flow` variable to reverse the position result, by reversing the time constant in the calculations if my SimTime is decrementing
+
+To ensure SimTime stays in step with the VirtualTime, we always increment and decrement it by the virutal time's (delta) seconds. SimTime == VirtualTime (sort of)!
+
+
+**Any bodies that are spawned, destroyed or updated must be logged against a `SimTime` and dealt with at the time the event happens. So if we rewound time to before they existed, they won't cause issues by still being present in calculations**
+
+- This is a current issue.
+
+### How to deal with X when rewinding time:
+**Spawned**
+- Put entity id in table with SpawnTime
+- Remove Simulated and GUI components
+**Destroyed**
+- Log position
+- I am out of ideas
+**Updated**

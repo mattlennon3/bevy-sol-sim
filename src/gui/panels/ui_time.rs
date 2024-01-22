@@ -1,123 +1,66 @@
-use bevy::prelude::*;
 use bevy::prelude::Time;
-use std::time::Duration;
-
-#[derive(Resource, Debug, Copy, Clone)]
-pub struct SimTime(u64);
-
-impl Default for SimTime {
-    fn default() -> Self {
-        Self(0)
-    }
-}
-
-#[derive(Resource, Debug, Default, States, Hash, Eq, PartialEq, Clone, Copy)]
-pub enum TimeAction {
-    #[default]
-    Forward,
-    Rewind,
-    Paused,
-}
-
-#[derive(Resource, Debug)]
-pub struct TimeState {
-    state: TimeAction,
-    previous_state: TimeAction,
-    /** Used to 0.5x, x2 or 10x the time speed */
-    time_multiplier: u16,
-    step_multiplier: u16,
-}
-
-impl Default for TimeState {
-    fn default() -> Self {
-        Self {
-            state: TimeAction::Forward,
-            previous_state: TimeAction::Forward,
-            time_multiplier: 1,
-            step_multiplier: 1,
-        }
-    }
-}
+use bevy::prelude::*;
+use crate::sol::reality_calculator::{
+    StepBackwardEvent, StepForwardEvent, TIME_DELTA_PER_TICK,
+};
 
 pub struct GameTimePlugin;
 
 impl Plugin for GameTimePlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(SimTime::default())
-            .insert_resource(TimeState::default())
-            .add_state::<TimeAction>()
-            .add_systems(Update, time_system)
-            .add_systems(Update, pause_on_space)
+        app.add_systems(Update, pause_on_space)
+            .add_systems(Update, speed_keybinds)
             .add_systems(Update, step_keybinds);
     }
 }
 
-/// `Virtual` time related marker
-#[derive(Component)]
-struct VirtualTime;
+const MAX_TIME_MULTIPLIER: f32 = 10.0;
 
-pub fn time_system(
-    mut time: ResMut<SimTime>,
-    mut actual_time: Res<Time<Virtual>>,
-    time_state: ResMut<TimeState>,
-) {
+fn speed_keybinds(mut time: ResMut<Time<Virtual>>, input: Res<Input<KeyCode>>) {
+    let delta = 0.5;
+    let current_speed = time.relative_speed();
 
-    // TODO: Lock so 1 actual second === 1 time second by using )
-    // Then we can use the time multiplier to speed up or slow down time
-    actual_time.delta_seconds();
-    actual_time.relative_speed();
-    // actual_time.set_relative_speed(ratio);
-
-
-    match time_state.state {
-        TimeAction::Forward => {
-            time.0 += 1 * time_state.time_multiplier as u64;
-        }
-        TimeAction::Rewind => {
-            time.0 -= 1 * time_state.time_multiplier as u64;
-        }
-        TimeAction::Paused => (),
+    if input.just_pressed(KeyCode::Up) {
+        time.set_relative_speed(
+            (current_speed + delta).clamp(TIME_DELTA_PER_TICK + 0.001, MAX_TIME_MULTIPLIER),
+        );
+    }
+    if input.just_pressed(KeyCode::Down) {
+        time.set_relative_speed(
+            (current_speed - delta).clamp(TIME_DELTA_PER_TICK + 0.001, MAX_TIME_MULTIPLIER),
+        );
     }
 }
 
 fn step_keybinds(
-    mut time: ResMut<SimTime>,
-    mut time_state: ResMut<TimeState>,
+    time: Res<Time<Virtual>>,
     input: Res<Input<KeyCode>>,
+    mut step_forward: EventWriter<StepForwardEvent>,
+    mut step_backward: EventWriter<StepBackwardEvent>,
 ) {
-    if input.just_pressed(KeyCode::Left) {
-        time.0 += 1 * time_state.time_multiplier as u64;
-    }
-    if input.just_pressed(KeyCode::Right) {
-        time.0 -= 1 * time_state.time_multiplier as u64;
+    // Only allow stepping when paused
+    if !time.is_paused() {
+        return;
     }
 
-    if input.just_pressed(KeyCode::Up) {
-        time_state.time_multiplier = time_state.time_multiplier + 10;
+    // INFO: Can be changed to just_pressed for incremental stepping
+    // TODO: Add a "wait" before holding the button to step rapidly
+    if input.pressed(KeyCode::Left) {
+        step_backward.send(StepBackwardEvent);
     }
-    if input.just_pressed(KeyCode::Down) {
-        time_state.time_multiplier = time_state.time_multiplier - 10;
+    if input.pressed(KeyCode::Right) {
+        step_forward.send(StepForwardEvent);
     }
 }
 
-fn pause_on_space(
-    state: Res<State<TimeAction>>,
-    mut next_state: ResMut<NextState<TimeAction>>,
-    focused_windows: Query<(Entity, &Window)>,
-    input: Res<Input<KeyCode>>,
-) {
-    for (_, focus) in focused_windows.iter() {
-        if !focus.focused {
-            continue;
-        }
-        if input.just_pressed(KeyCode::Space) {
-            let time_state = state.get();
-            match time_state {
-                TimeAction::Paused => {
-                    next_state.set(TimeAction::Forward);
-                }
-                _ => (),
-            }
+fn pause_on_space(input: Res<Input<KeyCode>>, mut time: ResMut<Time<Virtual>>) {
+    if input.just_pressed(KeyCode::Space) {
+        if time.is_paused() {
+            info!("UNPAUSED!");
+            time.unpause();
+        } else {
+            info!("PAUSED!");
+            time.pause();
         }
     }
 }
