@@ -34,6 +34,7 @@ At first, a 2d system will be simulated, to show the mechanics work. Later, I ma
 - [ ] Timekeeping
   - [ ] Be able to rewind time
   - [ ] Show previous path / future path
+- [ ] Lagrange points
 
 ## 3d Goals
 Toggle between 2d and 3d? or just rewrite in 3d...
@@ -45,7 +46,7 @@ Toggle between 2d and 3d? or just rewrite in 3d...
 
 ## Crazy future goals
 - [ ] Configuring planet composition (affects collision, radius, mass etc)
-- [ ] Voxel planets / mini spaceship game
+- [ ] Voxel planets / mini spaceship game (see [GAMIFICATION.md](./GAMIFICATION.md))
 - [ ] Heat/temperature from proximity to the sun/other planets and affecting water/ice etc
 
 
@@ -107,3 +108,16 @@ To ensure SimTime stays in step with the VirtualTime, we always increment and de
 - Log position
 - I am out of ideas
 **Updated**
+
+
+### Issues with Time
+A fundamental issue atm seems to be: When I rewind time, I don't get back to the exact same place.
+I think floating point calculations are what is getting me here.
+
+Maybe I need to get an MVSP (minimum viable something) to recreate the time function with a simpler model
+e.g move a square backwards and forwards on screen. Tracking with the time method I've made
+I then
+
+
+# Thoughts
+I can do a faithful n-body simualtor of the solar system (with accurate rewind control), or make it into a bit of a game (don't bother with rewind time). Probably not that sustainable to do both.
