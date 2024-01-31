@@ -22,12 +22,12 @@ fn speed_keybinds(mut time: ResMut<Time<Virtual>>, input: Res<Input<KeyCode>>) {
 
     if input.just_pressed(KeyCode::Up) {
         time.set_relative_speed(
-            (current_speed + delta).clamp(TIME_DELTA_PER_TICK + 0.001, MAX_TIME_MULTIPLIER),
+            (current_speed + delta).clamp(TIME_DELTA_PER_TICK as f32 + 0.001, MAX_TIME_MULTIPLIER),
         );
     }
     if input.just_pressed(KeyCode::Down) {
         time.set_relative_speed(
-            (current_speed - delta).clamp(TIME_DELTA_PER_TICK + 0.001, MAX_TIME_MULTIPLIER),
+            (current_speed - delta).clamp(TIME_DELTA_PER_TICK as f32 + 0.001, MAX_TIME_MULTIPLIER),
         );
     }
 }
