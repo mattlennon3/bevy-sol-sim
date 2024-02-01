@@ -14,6 +14,11 @@ At first, a 2d system will be simulated, to show the mechanics work. Later, I ma
   - [ ] Planet radius should be a factor of it's mass and density?
 - [ ] Differing textures for the planets (doesn't have to be accurate)
 - [ ] Background with starts of different shades of white & scattering of other colours
+- [ ] Voxel Planets
+    - [ ] Meteors able to have accurate destructive effects
+    - [ ] Allows gravity to rip apart planets and moons
+    - Potential implementation https://matthias-research.github.io/pages/tenMinutePhysics/18-flip.html
+    - Clouds/Gases https://github.com/abnormalbrain/bevy_particle_systems
 - [ ] Camera controls
   - [ ] Camera focus on 1 object
   - [ ] Camera auto zoom to show the current system

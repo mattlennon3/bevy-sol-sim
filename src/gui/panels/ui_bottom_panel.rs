@@ -47,7 +47,7 @@ pub fn render_bottom_panel_gui(
     mut end_spawning: EventWriter<EndSpawningEvent>,
     mut place_state: ResMut<UIPlaceState>,
     mut egui_contexts: EguiContexts,
-    scene_assets: Res<SceneAssets>,
+    // scene_assets: Res<SceneAssets>,
 ) {
     let control_spacer_width = 60.0;
 

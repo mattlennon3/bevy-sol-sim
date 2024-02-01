@@ -1,3 +1,5 @@
+use std::alloc::System;
+
 use bevy::math::Vec2;
 
 use super::celestial_body::{CelestialBodyBundle, Mass, Momentum, Position};
@@ -12,6 +14,15 @@ pub fn sol_system() -> SystemContents {
     let star_momentum = Momentum(Vec2::ZERO);
 
     let objects = vec![(star, star_momentum)];
+    return objects;
+}
+
+pub fn single_voxel_planet() -> SystemContents {
+    let planet = CelestialBodyBundle::new_planet(Position::new(0.0, 0.0), Some(Mass(1_000_000.0)));
+    // let planet_bundle = CelestialBodyBundle::new(planet, Position::new(850.0, 0.0));
+    let planet_momentum = Momentum(Vec2::new(0.0, 0.0));
+
+    let objects = vec![(planet, planet_momentum)];
     return objects;
 }
 

@@ -27,6 +27,7 @@ use self::panels::ui_selected_body::{render_active_body_gui, UISelectedBody};
 use self::assets::asset_loader::AssetLoaderPlugin;
 use self::camera::ui_camera::{setup_camera, zoom_2d};
 use self::panels::ui_bottom_panel::{render_bottom_panel_gui, UIPickedBody};
+use self::sol_gui::body_grid::BodyGridPlugin;
 use self::tools::follow_body::{follow_body, UIFollowBody};
 use self::tools::spawning::SpawningPlugin;
 use self::tools::trajectory::TrajectoryPlugin;
@@ -42,7 +43,8 @@ impl Plugin for SolGuiPlugin {
             .add_plugins(DefaultPickingPlugins)
             .add_plugins(SpawningPlugin)
             .add_plugins(TrajectoryPlugin)
-            .add_plugins(AssetLoaderPlugin)
+            // .add_plugins(AssetLoaderPlugin)
+            .add_plugins(BodyGridPlugin)
             .add_plugins(MesherPlugin)
             .insert_resource(UISelectedBody::default())
             .insert_resource(UIFollowBody::default())

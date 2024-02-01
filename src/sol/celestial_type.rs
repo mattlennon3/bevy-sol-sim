@@ -5,6 +5,7 @@ use bevy::prelude::Component;
 pub enum CelestialType {
     STAR,
     PLANET,
+    // MOON,
     ASTEROID,
 }
 

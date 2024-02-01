@@ -2,9 +2,11 @@ mod gui;
 mod sol;
 
 use crate::gui::panels::ui_time::GameTimePlugin;
+use crate::gui::sol_gui::body_grid::ShowGrid;
 use crate::gui::sol_gui::celestial_body_gui::CelestialBodyGuiBundle;
+use crate::sol::celestial_body::Voxelised;
 use crate::sol::reality_calculator::Simulated;
-use crate::sol::systems::{one_planet_system, sol_system, twin_planet_system};
+use crate::sol::systems::{one_planet_system, single_voxel_planet, sol_system, twin_planet_system};
 
 use bevy::prelude::*;
 use gui::SolGuiPlugin;
@@ -34,14 +36,14 @@ fn main() {
 
 // Move to systems.rs?
 fn big_bang(mut commands: Commands) {
-    let system = twin_planet_system();
+    let system = single_voxel_planet();
     info!("BANG");
     for (body_bundle, momentum) in system.clone() {
         // info!("Spawning {:?}", &body_bundle);
         commands
             .spawn(body_bundle)
             .insert(momentum)
-            .insert((CelestialBodyGuiBundle::new(), Simulated));
+            .insert((CelestialBodyGuiBundle::new(), Simulated, Voxelised, ShowGrid));
     }
     info!("Simulated Bodies: {:?}", system.len());
 }

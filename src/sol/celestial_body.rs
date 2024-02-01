@@ -8,7 +8,7 @@ use crate::{
     sol::reality_calculator::Simulated,
 };
 
-use super::{celestial_type::CelestialType, reality_calculator::GRAVITY};
+use super::{celestial_type::CelestialType, reality_calculator::GRAVITY, voxels::composition::{self, Composition}};
 
 #[derive(Component, Clone, Eq, PartialEq, Debug)]
 pub struct BodyName(String); // "Name" used by bevy
@@ -27,6 +27,9 @@ pub struct Position(pub Vec2);
 #[derive(Component, Clone, Copy, PartialEq, Debug)]
 pub struct Momentum(pub Vec2);
 
+#[derive(Component, Clone, Copy, PartialEq, Debug, PartialOrd)]
+pub struct Voxelised;
+
 #[derive(Bundle, Clone, PartialEq)]
 pub struct CelestialBodyBundle {
     pub body_type: CelestialType,
@@ -35,6 +38,7 @@ pub struct CelestialBodyBundle {
     pub name: BodyName,
     pub radius: Radius,
     pub mass: Mass,
+    pub composition: Composition,
     // Not sure if momentum should be in the initial bundle
     // pub momentum: Momentum,
 }
@@ -121,6 +125,8 @@ impl CelestialBodyBundle {
         };
         let radius = celestial_body::get_default_radius(body_type, mass);
         let transform = Transform::new_body(position);
+        let mut composition = Composition::new();
+        composition.rock_fill(mass.0);
         Self {
             body_type,
             transform,
@@ -128,6 +134,7 @@ impl CelestialBodyBundle {
             name,
             mass,
             radius,
+            composition,
         }
     }
 
@@ -165,13 +172,13 @@ pub mod celestial_body {
     pub fn random_mass(body_type: CelestialType) -> Mass {
         let floor = match body_type {
             CelestialType::ASTEROID => 1,
-            CelestialType::PLANET => 50,
-            CelestialType::STAR => 700,
+            CelestialType::PLANET => 5_000,
+            CelestialType::STAR => 100_000,
         };
         let ceiling = match body_type {
-            CelestialType::ASTEROID => 5,
-            CelestialType::PLANET => 600,
-            CelestialType::STAR => 3500,
+            CelestialType::ASTEROID => 100,
+            CelestialType::PLANET => 30_000,
+            CelestialType::STAR => 1_000_000,
         };
         // generate number between floor and ceiling
         Mass(rand::thread_rng().gen_range(floor..ceiling) as f32)
