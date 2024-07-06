@@ -23,7 +23,7 @@ impl Plugin for BodyGridPlugin {
 }
 
 // TODO: Improve this by using the four corner function
-fn add_body_grid_old(
+fn add_body_grid(
     query: Query<(&Voxelised, &Composition, &Transform), With<ShowGrid>>,
     mut gizmos: Gizmos,
 ) {

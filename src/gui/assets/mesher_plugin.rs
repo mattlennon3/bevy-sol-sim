@@ -69,7 +69,7 @@ pub fn setup_grid_gizmo_config(
 
 
 // TODO: Improve this by using the four corner function
-pub fn render_radius_layer_old(
+pub fn render_radius_layer(
     radius: u32,
     transform: &Transform,
     gizmos: &mut Gizmos,
@@ -82,7 +82,7 @@ pub fn render_radius_layer_old(
 }
 
 // TODO: Improve this by using the four corner function
-pub fn render_voxel_vertical_boundary_old(
+pub fn render_voxel_vertical_boundary(
     radius: u32,
     voxel_quantity: u32,
     transform: &Transform,

@@ -7,7 +7,8 @@ pub struct SceneAssets {
     pub asteroid: Handle<Scene>,
 }
 
-pub struct AssetLoaderPlugin;
+//TODO: See what pub(crate does)
+pub(crate) struct AssetLoaderPlugin;
 
 impl Plugin for AssetLoaderPlugin {
     fn build(&self, app: &mut App) {

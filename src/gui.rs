@@ -25,7 +25,7 @@ use self::kb_mouse::mouse_states::UIMouseState;
 use self::panels::ui_selected_body::{render_active_body_gui, UISelectedBody};
 // use self::bottom_panel::{UIPickedBody};
 use self::assets::asset_loader::AssetLoaderPlugin;
-use self::camera::ui_camera::{setup_camera, zoom_2d};
+use self::camera::ui_camera::CameraPlugin;
 use self::panels::ui_bottom_panel::{render_bottom_panel_gui, UIPickedBody};
 use self::sol_gui::body_grid::BodyGridPlugin;
 use self::tools::follow_body::{follow_body, UIFollowBody};
@@ -40,6 +40,7 @@ impl Plugin for SolGuiPlugin {
             // .add_plugins(EguiPlugin)
             .add_plugins(WorldInspectorPlugin::new()) // instead of egui
             .add_plugins(FlyCameraPlugin)
+            .add_plugins(CameraPlugin)
             .add_plugins(DefaultPickingPlugins)
             .add_plugins(SpawningPlugin)
             .add_plugins(TrajectoryPlugin)
@@ -50,14 +51,11 @@ impl Plugin for SolGuiPlugin {
             .insert_resource(UIFollowBody::default())
             .insert_resource(UIPickedBody::default())
             .insert_resource(UIMouseState::default())
-            .add_systems(Startup, setup_camera)
             .add_systems(Startup, setup_gui)
             .add_systems(
                 Update,
-                (render_active_body_gui, render_bottom_panel_gui)
-                    // .run_if(on_real_timer(Duration::from_millis(100))),
+                (render_active_body_gui, render_bottom_panel_gui), // .run_if(on_real_timer(Duration::from_millis(100))),
             )
-            .add_systems(Update, zoom_2d)
             .add_systems(Update, follow_body);
     }
 }

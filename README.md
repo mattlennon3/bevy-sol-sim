@@ -126,3 +126,31 @@ I then
 
 # Thoughts
 I can do a faithful n-body simualtor of the solar system (with accurate rewind control), or make it into a bit of a game (don't bother with rewind time). Probably not that sustainable to do both.
+
+
+## Great rendering video
+could render the world nicely with this?
+https://www.youtube.com/watch?v=A0pxY9QsgJE
+might make for an interesting art style
+would still use point based elements/atoms, but render
+with the above system
+
+
+Fluid video
+https://www.youtube.com/watch?v=qsYE1wMEMPA
+
+## Doing the polar voxel grid (as a grid) is a pointless excercise atm
+I should be doing some (fluid simulations with multiple fluid types) <-- AKA cellular automata
+After that I will have a better understanding of if/how I might need
+to use the polar grid.
+I think the initial idea was to use it for texturing and a more rigid world
+But I think this may be the wrong idea, particularly if I use the rendering engine above
+
+I should try to make a separate fluid simulation project
+
+
+## Faster N body calculations
+This library looks pretty good for what I am aiming to do with bodies coalescing and being able to be broken up again
+https://github.com/Canleskis/particular/tree/main
+It doesn't use [XPBD](https://github.com/Jondolf/bevy_xpbd) though, it uses rapier. So perhaps not as efficient as I'd like.
+

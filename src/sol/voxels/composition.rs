@@ -172,7 +172,7 @@ pub fn calculate_voxels_per_layer(radius: u32) -> u32 {
 }
 
 // Both width and height in pixels
-pub static VOXEL_SQUARE: u32 = 4;
+pub static VOXEL_SQUARE: u32 = 50;
 
-static DEFAULT_CORE_MASS: u32 = 1000;
-static DEFAULT_CORE_RADIUS: u32 = 30;
+static DEFAULT_CORE_MASS: u32 = 10000;
+static DEFAULT_CORE_RADIUS: u32 = 50;
